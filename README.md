@@ -30,12 +30,7 @@ Pour récupérer les données, l'application écoute les connexions TCP sur l'ad
      }
      ```
 
-2. **Exemple de données :**  
-   ```json
-   {
-     "data": "temperature",
-     "value": 22.5
-   }
+
 ### Affichage des Données
 La gestion des données reçues repose sur un système d'événements entre le backend et le frontend.
 
@@ -47,7 +42,7 @@ Le frontend écoute les événements via le module @tauri-apps/api/event :
 ```typescript
 import { listen } from "@tauri-apps/api/event";
 
-listen(props.data_name, (event) => {
+listen("data_name", (event) => {
   console.log(event); // Affiche les données reçues
   displayed_data.value = event.payload as number; // Met à jour l'interface
 });
