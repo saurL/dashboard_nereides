@@ -52,7 +52,7 @@ listen("data_name", (event) => {
 1. **Clonez le dépôt :**
 
 ```bash
-git clone https://github.com/votre-repo/nereides-dashboard.git
+git clone https://github.com/saurL/dashboard_nereides
 cd nereides-dashboard
 ```
 
