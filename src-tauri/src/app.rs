@@ -1,7 +1,7 @@
 use log::error;
 use socketcan::{CanSocket, Socket};
 use tauri::{AppHandle, Manager};
-// small change to test
+// small change to test ff 
 pub struct App{
     can_socket: Option<CanSocket>,
     app_handle: AppHandle
