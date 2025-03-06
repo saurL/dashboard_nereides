@@ -1,11 +1,10 @@
 mod csv;
-mod socket;
+mod app;
 use std::sync::Arc;
+use log::info;
 use tokio::sync::Mutex;
-
-//
-use socket::SocketServer;
-use tauri::AppHandle;
+use app::App;
+use tauri::{AppHandle, Manager};
 use tauri::{async_runtime::spawn, Emitter};
 use tokio::time::{sleep, Duration};
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
@@ -104,7 +103,14 @@ async fn send_event(
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+
     tauri::Builder::default()
+    .setup(|app| {
+
+        app.manage(App::new(app.handle().clone()));
+
+        Ok(())
+    })
         .plugin(tauri_plugin_shell::init())
         .plugin(
             tauri_plugin_log::Builder::new()
@@ -112,24 +118,13 @@ pub fn run() {
                     tauri_plugin_log::TargetKind::LogDir {
                         file_name: Some("logs".to_string()),
                     },
-                ))
+                )).target(tauri_plugin_log::Target::new(
+                    tauri_plugin_log::TargetKind::Webview,
+                  ))
                 .build(),
         )
         .invoke_handler(tauri::generate_handler![greet])
-        .setup(|app| {
-            let app_handle = Arc::new(Mutex::new(app.handle().clone()));
-
-            spawn(async move {
-                let socket_server = Arc::new(SocketServer::new(8080, app_handle).await.unwrap());
-                socket_server.run()
-                /*
-                let app_handle = Arc::new(Mutex::new(app_handle));
-                if let Err(err) = async_main(app_handle) {
-                    eprintln!("Error in async_main: {}", err);
-                } */
-            });
-            Ok(())
-        })
+       
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

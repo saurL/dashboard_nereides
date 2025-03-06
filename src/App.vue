@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { Ref, ref } from "vue";
-import verticalBar from "./component/verticalBar.vue";
-import circularBar from "./component/circularBar.vue";
+import { Ref, ref,onMounted } from "vue";
 import coloredData from "./component/coloredData.vue";
 import { listen } from "@tauri-apps/api/event";
 import ColoredData from "./component/coloredData.vue";
@@ -54,11 +52,15 @@ datas.forEach((data) => {
   listen(data, (event) => {
     const dataRef = dataRefs.get(data);
     if (dataRef) {
-      dataRef.timestamp.value = event.payload.timestamp;
-      dataRef.value.value = event.payload.value; // Traitement de l'événement
+      const payload = event.payload as { timestamp: string; value: number };
+      dataRef.timestamp.value = payload.timestamp;
+      dataRef.value.value = payload.value; // Traitement de l'événement
     }
   });
 });
+onMounted(async () => {
+})
+
 </script>
 
 <template>
@@ -111,7 +113,7 @@ datas.forEach((data) => {
 </template>
 
 <style>
-@import "vuetify/styles";
+
 
 .top-container {
   border: 2px solid white;
