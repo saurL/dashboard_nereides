@@ -27,7 +27,7 @@ jobs:
         run: sudo apt-get update
       - name: install dependencies
         run: |
-          sudo apt-get install -y libglib2.0-dev libgtk-3-dev libsoup-3.0-dev pkg-config
+          sudo apt-get install -y libglib2.0-dev libgtk-3-dev libsoup-3.0-dev libjavascriptcoregtk-4.1-dev pkg-config
 
       - name: export pkg config path
         run: export PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig:$PKG_CONFIG_PATH
