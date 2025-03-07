@@ -116,7 +116,7 @@ impl App {
                         Ok(frame) => {
                             let id = frame.id();
                             let data = frame.data();
-                            info!("Donnée reçue {} {}", id, data);
+                            info!("Donnée reçue {} {:?}", id, data);
                             // Traitez les données du frame ici et émettez des événements en conséquence
                             // Par exemple, vous pouvez convertir les données en une valeur et émettre un événement
                             let value = data[0] as f64; // Conversion simplifiée pour l'exemple
