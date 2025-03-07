@@ -28,13 +28,6 @@ jobs:
           node-version: lts/*
       - name: update
         run: sudo apt-get update
-      - name: install sysroot
-        run: |
-          sudo apt-get install crosstool-ng
-          ct-ng arm-unknown-linux-gnueabihf
-          ct-ng build
-          export PKG_CONFIG_SYSROOT_DIR=~/crosstool-ng/build/arm-unknown-linux-gnueabihf/staging
-          export PKG_CONFIG_PATH=$PKG_CONFIG_SYSROOT_DIR/usr/lib/pkgconfig
 
       - name: install dependencies
         run: |
