@@ -26,8 +26,8 @@ jobs:
           node-version: lts/*
       - name: install depencies
         run: |
-          sudo apt update \
-          sudo apt install -y libglib2.0-dev pkg-config \
+          sudo apt-get update 
+          sudo apt-get install -y libglib2.0-dev pkg-config 
           export PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig:$PKG_CONFIG_PATH
 
       - name: install Rust stable
