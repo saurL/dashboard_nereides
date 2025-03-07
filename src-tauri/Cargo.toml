@@ -31,5 +31,4 @@ rand = "0.8"
 [dependencies.libc]
 version = "0.2"
 optional = true
-
 socketcan = "2.0"

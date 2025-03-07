@@ -73,14 +73,21 @@ impl App {
             app_handle,
             datas: datas.to_vec(),
         };
-        #[cfg(target_os = "windows")]
-        {
-            instance.start_sending_events();
-        }
+        instance.run();
         instance
     }
 
-    pub fn start_sending_events(&self) {
+    pub fn run(&self) {
+        #[cfg(target_os = "linux")]
+        {
+            self.read_can_data();
+        }
+        #[cfg(target_os = "windows")]
+        {
+            self.start_sending_random_events();
+        }
+    }
+    pub fn start_sending_random_events(&self) {
         // Cet fonction sert a envoyer des évenemnts pour chaque donnée avec une valeur aléatoire , pour l'instant nous ne gérons pas les évenement de type erre
         let app_handle = self.app_handle.clone();
         let mut rng = StdRng::from_entropy();
@@ -96,5 +103,32 @@ impl App {
                 sleep(Duration::from_secs(1)).await;
             }
         });
+    }
+    #[cfg(target_os = "linux")]
+    pub fn read_can_data(&self) {
+        let app_handle = self.app_handle.clone();
+        if let Some(socket) = &self.can_socket {
+            spawn(async move {
+                info!("Démarrage de la lecture des données CAN");
+
+                loop {
+                    match socket.read_frame() {
+                        Ok(frame) => {
+                            let id = frame.id();
+                            let data = frame.data();
+                            info!("Donnée reçue {} {}", id, data);
+                            // Traitez les données du frame ici et émettez des événements en conséquence
+                            // Par exemple, vous pouvez convertir les données en une valeur et émettre un événement
+                            let value = data[0] as f64; // Conversion simplifiée pour l'exemple
+                            app_handle.emit("can_data", value).unwrap();
+                        }
+                        Err(e) => {
+                            error!("Erreur lors de la lecture du frame CAN: {:?}", e);
+                        }
+                    }
+                    sleep(Duration::from_millis(100)).await; // Ajustez la fréquence de lecture si nécessaire
+                }
+            });
+        }
     }
 }
