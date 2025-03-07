@@ -114,7 +114,7 @@ impl App {
                 loop {
                     match socket.read_frame() {
                         Ok(frame) => {
-                            let id = frame.id();
+                            let id = frame.id().as_raw().to_string();
                             let data = frame.data();
                             info!("Donnée reçue {:?} {:?}", id, data);
                             // Traitez les données du frame ici et émettez des événements en conséquence
