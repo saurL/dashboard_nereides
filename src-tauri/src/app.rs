@@ -106,10 +106,11 @@ impl App {
     }
     #[cfg(target_os = "linux")]
     pub fn read_can_data(&self) {
-        if let Some(socket) = &self.can_socket {
+        let can_socket = self.socket.clone();
+
+        if let Some(socket) = can_socket {
             let app_handle = self.app_handle.clone();
 
-            let can_socket = socket.clone();
             spawn(async move {
                 info!("Démarrage de la lecture des données CAN");
 

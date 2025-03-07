@@ -14,10 +14,13 @@ jobs:
       matrix:
         include:
           - platform: "ubuntu-24.04-arm"
+            args: "--target armv7-unknown-linux-gnueabihf"
 
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v4
+      - name: add target
+        run: rustup target add armv7-unknown-linux-gnueabihf
 
       - name: setup node
         uses: actions/setup-node@v4
