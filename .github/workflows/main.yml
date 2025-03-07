@@ -14,7 +14,7 @@ jobs:
       matrix:
         include:
           - platform: "ubuntu-24.04-arm"
-            args: "--target armv7-unknown-linux-gnueabihf"
+            args: "--target armv7-unknown-linux-gnueabihf --verbose"
 
     runs-on: ${{ matrix.platform }}
     steps:
