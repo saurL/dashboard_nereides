@@ -40,6 +40,13 @@ jobs:
       - name: install aarch64 target
         if: matrix.platform == 'ubuntu-22.04'
         run: rustup target add aarch64-unknown-linux-gnu
+
+      - name : add
+        run : |
+          echo "deb [arch=arm64] http://ports.ubuntu.com/ jammy main universe restricted multiverse" | sudo tee -a /etc/apt/sources.list \
+          echo "deb [arch=arm64] http://ports.ubuntu.com/ jammy-updates main universe restricted multiverse" | sudo tee -a /etc/apt/sources.list \
+          echo "deb [arch=arm64] http://ports.ubuntu.com/ jammy-security main universe restricted multiverse" | sudo tee -a /etc/apt/sources.list \
+          sudo apt-get update
         
       - name: install ARM dependencies
         if: matrix.platform == 'ubuntu-22.04'
