@@ -24,11 +24,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
-      - name: install depencies
+      - name : update
+        run: sudo apt-get update 
+      - name: install dependencies 
         run: |
-          sudo apt-get update 
-          sudo apt-get install -y libglib2.0-dev pkg-config 
-          export PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig:$PKG_CONFIG_PATH
+          sudo apt-get install -y libglib2.0-dev libgtk-3-dev pkg-config 
+          
+      - name: export pkg config path
+        run: export PKG_CONFIG_PATH=/usr/lib/aarch64-linux-gnu/pkgconfig:$PKG_CONFIG_PATH
+        
 
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
