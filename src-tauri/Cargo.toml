@@ -28,7 +28,5 @@ log = "0.4"
 tauri-plugin-log = "2"
 rand = "0.8"
 
-[dependencies.libc]
-version = "0.2"
-optional = true
+[target.'cfg(unix)'.dependencies]
 socketcan = "2.0"
