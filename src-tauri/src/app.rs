@@ -5,7 +5,7 @@ use tauri::{async_runtime::spawn, AppHandle, Emitter, Manager};
 use rand::rngs::StdRng;
 use rand::{Rng, SeedableRng};
 #[cfg(target_os = "linux")]
-use socketcan::{CanSocket, Socket};
+use socketcan::{CanSocket, EmbeddedFrame, Socket};
 use tokio::time::{sleep, Duration};
 
 pub struct App {
