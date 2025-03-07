@@ -26,5 +26,10 @@ tokio = { version = "1", features = ["full"] }
 csv = "1.2"
 log = "0.4"
 tauri-plugin-log = "2"
-socketcan = "2.0"
+rand = "0.8"
 
+[dependencies.libc]
+version = "0.2"
+optional = true
+
+socketcan = "2.0"
