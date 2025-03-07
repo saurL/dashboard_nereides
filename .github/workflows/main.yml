@@ -13,7 +13,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: "ubuntu-24.04-arm"
+          - platform: "ubuntu:latest"
             args: "--target armv7-unknown-linux-gnueabihf --verbose"
 
     runs-on: ${{ matrix.platform }}
