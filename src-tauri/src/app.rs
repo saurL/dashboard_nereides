@@ -114,13 +114,13 @@ impl App {
                 loop {
                     match socket.read_frame() {
                         Ok(frame) => {
-                            let id = frame.id().as_raw().to_string();
+                            let id = frame.id();
                             let data = frame.data();
                             info!("Donnée reçue {:?} {:?}", id, data);
                             // Traitez les données du frame ici et émettez des événements en conséquence
                             // Par exemple, vous pouvez convertir les données en une valeur et émettre un événement
                             let value = data[0] as f64; // Conversion simplifiée pour l'exemple
-                            app_handle.emit(id, value).unwrap();
+                            app_handle.emit("donnée", value).unwrap();
                         }
                         Err(e) => {
                             error!("Erreur lors de la lecture du frame CAN: {:?}", e);
