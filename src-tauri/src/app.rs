@@ -108,11 +108,12 @@ impl App {
     pub fn read_can_data(&self) {
         let app_handle = self.app_handle.clone();
         if let Some(socket) = &self.can_socket {
+            let can_socket = socket.clone();
             spawn(async move {
                 info!("Démarrage de la lecture des données CAN");
 
                 loop {
-                    match socket.read_frame() {
+                    match can_socket.read_frame() {
                         Ok(frame) => {
                             let id = frame.id();
                             let data = frame.data();
