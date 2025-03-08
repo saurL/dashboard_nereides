@@ -2,12 +2,12 @@ use log::{error, info};
 
 use tauri::{async_runtime::spawn, AppHandle, Emitter, Manager};
 
+use crate::mqtt::{self, MQTT};
 use rand::rngs::StdRng;
 use rand::{Rng, SeedableRng};
 #[cfg(target_os = "linux")]
 use socketcan::{CanSocket, EmbeddedFrame, Socket};
 use tokio::time::{sleep, Duration};
-
 pub struct App {
     #[cfg(target_os = "linux")]
     can_socket: Option<CanSocket>,
@@ -16,6 +16,7 @@ pub struct App {
     can_socket: Option<()>, // Remplacer par un type générique ou un autre champ si nécessaire.
     app_handle: AppHandle,
     datas: Vec<&'static str>,
+    mqtt: MQTT,
 }
 
 impl App {
@@ -57,6 +58,7 @@ impl App {
             "pac_total_produced_energy",
         ];
         let mut socket = None;
+        let mqtt = MQTT::new();
 
         // S'assurer que le code avec socketcan est uniquement exécuté sur Linux
         #[cfg(target_os = "linux")]
@@ -72,6 +74,7 @@ impl App {
             can_socket: socket,
             app_handle,
             datas: datas.to_vec(),
+            mqtt,
         };
         instance.run();
         instance
@@ -92,6 +95,7 @@ impl App {
         let app_handle = self.app_handle.clone();
         let mut rng = StdRng::from_entropy();
         let datas = self.datas.clone();
+        let mqtt = self.mqtt.clone();
         spawn(async move {
             info!("Démarrage de l'envoi des évenements aléatoires");
 
@@ -99,6 +103,7 @@ impl App {
                 for data in &datas {
                     let value: f64 = rng.gen_range(0.0..100.0);
                     app_handle.emit(data, value).unwrap();
+                    mqtt.send_event(data, value);
                 }
                 sleep(Duration::from_secs(1)).await;
             }

@@ -27,6 +27,7 @@ csv = "1.2"
 log = "0.4"
 tauri-plugin-log = "2"
 rand = "0.8"
+rumqttc = "0.24"
 
 [target.'cfg(unix)'.dependencies]
 socketcan = "2.0"
