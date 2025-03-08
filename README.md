@@ -58,8 +58,8 @@ cd nereides-dashboard
 
 2. **Instalez les dépendances**
 installez rust.
+installer node et npm
 `npm install`
-`cargo install cross --git https://github.com/cross-rs/cross`
 
 4. ** Lancez le projet en mode développement :**
 ```
