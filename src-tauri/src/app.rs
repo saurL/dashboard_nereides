@@ -2,7 +2,8 @@ use log::{error, info};
 
 use tauri::{async_runtime::spawn, AppHandle, Emitter, Manager};
 
-use crate::mqtt::{self, MQTT};
+use crate::csv_writer::Csv_writter;
+use crate::mqtt::MQTT;
 use rand::rngs::StdRng;
 use rand::{Rng, SeedableRng};
 #[cfg(target_os = "linux")]
@@ -17,6 +18,7 @@ pub struct App {
     app_handle: AppHandle,
     datas: Vec<&'static str>,
     mqtt: MQTT,
+    scv_writer: Csv_writter,
 }
 
 impl App {
@@ -59,6 +61,7 @@ impl App {
         ];
         let mut socket = None;
         let mqtt = MQTT::new();
+        let scv_writer = Csv_writter::new();
 
         // S'assurer que le code avec socketcan est uniquement exécuté sur Linux
         #[cfg(target_os = "linux")]
@@ -75,6 +78,7 @@ impl App {
             app_handle,
             datas: datas.to_vec(),
             mqtt,
+            scv_writer,
         };
         instance.run();
         instance
@@ -96,6 +100,7 @@ impl App {
         let mut rng = StdRng::from_entropy();
         let datas = self.datas.clone();
         let mqtt = self.mqtt.clone();
+        let mut scv_writer = self.scv_writer.clone();
         spawn(async move {
             info!("Démarrage de l'envoi des évenements aléatoires");
 
@@ -104,6 +109,7 @@ impl App {
                     let value: f64 = rng.gen_range(0.0..100.0);
                     app_handle.emit(data, value).unwrap();
                     mqtt.send_event(data, value);
+                    scv_writer.write_data(data, value).unwrap();
                 }
                 sleep(Duration::from_secs(1)).await;
             }

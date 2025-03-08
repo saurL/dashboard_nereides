@@ -1,7 +1,8 @@
+use crate::constant::DATAS_NAMES;
+use chrono::Local;
 use log::{error, info};
 use rumqttc::{Client, MqttOptions, QoS};
 use serde_json::error;
-use std::time::{SystemTime, UNIX_EPOCH};
 use tokio::time::{sleep, Duration};
 #[derive(Clone)]
 pub struct MQTT {
@@ -22,48 +23,12 @@ impl MQTT {
         let (client, mut eventloop) = Client::new(mqttoptions, 10);
 
         // Liste des topics
-        let topics = vec![
-            "gps_millis",
-            "gps_time",
-            "gps_latitude",
-            "gps_longitude",
-            "gps_vitesse",
-            "motor_current_a",
-            "motor_voltage_v",
-            "motor_rpm",
-            "motor_throttle",
-            "motor_temp",
-            "motor_controller_temp",
-            "motor_error_code",
-            "motor_controller_status",
-            "motor_switch_signals_status",
-            "battery_voltage_v",
-            "battery_current_a",
-            "battery_soc",
-            "battery_soh",
-            "batterySE_temp",
-            "pac_emergency_stop",
-            "pac_start",
-            "pac_stop",
-            "pac_current_a",
-            "pac_voltage_v",
-            "pac_system_state",
-            "pac_error_flag",
-            "pac_hydrogen_consumption_mgs",
-            "pac_temperature_c",
-            "pac_system_errors",
-            "pac_fan_error",
-            "pac_operation_time",
-            "pac_produced_energy",
-            "pac_total_operation_time",
-            "pac_total_produced_energy",
-        ];
-
+        let topics = DATAS_NAMES.clone();
         MQTT { client, topic }
     }
 
     pub fn send_event(&self, data_name: &str, data: f64) {
-        let timestamp = get_time();
+        let timestamp = Local::now().timestamp().to_string();
         let full_topic = format!("{}/{}/{}", self.topic, timestamp, data_name);
         let bytes: Vec<u8> = data.to_le_bytes().to_vec();
 
@@ -74,13 +39,4 @@ impl MQTT {
             error!("Erreur lors de l'envoi du message MQTT : {}", e);
         }
     }
-}
-
-// Fonction pour obtenir le timestamp actuel
-fn get_time() -> String {
-    let start = SystemTime::now();
-    let since_the_epoch = start
-        .duration_since(UNIX_EPOCH)
-        .expect("Time went backwards");
-    format!("D{}", since_the_epoch.as_secs())
 }
