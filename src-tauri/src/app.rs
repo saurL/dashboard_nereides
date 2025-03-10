@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use log::{error, info};
 
 use tauri::{async_runtime::spawn, AppHandle, Emitter, Manager};
@@ -11,7 +13,7 @@ use socketcan::{CanSocket, EmbeddedFrame, Socket};
 use tokio::time::{sleep, Duration};
 pub struct App {
     #[cfg(target_os = "linux")]
-    can_socket: Option<CanSocket>,
+    can_socket: Option<Arc<CanSocket>>,
 
     #[cfg(not(target_os = "linux"))]
     can_socket: Option<()>, // Remplacer par un type générique ou un autre champ si nécessaire.
@@ -74,7 +76,7 @@ impl App {
         }
 
         let instance = App {
-            can_socket: socket,
+            can_socket: socket.map(Arc::new),
             app_handle,
             datas: datas.to_vec(),
             mqtt,
@@ -117,16 +119,15 @@ impl App {
     }
     #[cfg(target_os = "linux")]
     pub fn read_can_data(&self) {
-        let can_socket = self.socket.clone();
-
-        if let Some(socket) = can_socket {
+        let can_socket = self.can_socket.clone();
+     
+        if let Some(socket) = can_socket{
             let app_handle = self.app_handle.clone();
-
             spawn(async move {
                 info!("Démarrage de la lecture des données CAN");
 
                 loop {
-                    match can_socket.read_frame() {
+                    match socket.read_frame() {
                         Ok(frame) => {
                             let id = frame.id();
                             let data = frame.data();
