@@ -73,9 +73,9 @@ Lorsque des modifications sont poussées sur la branche `release`, une action Gi
 
 ### 2. **Récupération des fichiers `.deb` ARM64**
 
-Une fois l'action GitHub terminée avec succès, le fichier `.deb` pour architecture ARM64 sera généré et disponible dans les artefacts de l'action. 
+Une fois l'action GitHub terminée avec succès, le fichier `.deb` pour architecture ARM64 sera généré et disponible dans l'onglet realse. 
 
-Pour vérifier que l'action a bien été exécutée et que le fichier a bien été mis à jour, vous pouvez consulter les logs de l'action dans GitHub. Vous y trouverez un lien pour télécharger le fichier `.deb`.
+Pour vérifier que l'action a bien été exécutée et que le fichier a bien été mis à jour, vous pouvez consulter . Vous y trouverez un lien pour télécharger le fichier `.deb`.
 
 ### 3. **Transfert du fichier `.deb` sur le Raspberry Pi**
 
