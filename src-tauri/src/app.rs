@@ -16,7 +16,7 @@ pub struct App {
     can_socket: Option<Arc<CanSocket>>,
 
     #[cfg(not(target_os = "linux"))]
-    can_socket: Option<()>, // Remplacer par un type générique ou un autre champ si nécessaire.
+    can_socket: Option<Arc<()>>, // Remplacer par un type générique ou un autre champ si nécessaire.
     app_handle: AppHandle,
     datas: Vec<&'static str>,
     mqtt: MQTT,
@@ -120,8 +120,8 @@ impl App {
     #[cfg(target_os = "linux")]
     pub fn read_can_data(&self) {
         let can_socket = self.can_socket.clone();
-     
-        if let Some(socket) = can_socket{
+
+        if let Some(socket) = can_socket {
             let app_handle = self.app_handle.clone();
             spawn(async move {
                 info!("Démarrage de la lecture des données CAN");
