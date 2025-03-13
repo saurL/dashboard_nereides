@@ -64,11 +64,11 @@ onMounted(async () => {
 </script>
 
 <template>
-  <v-col>
-    <v-container class="top-container">
+  <div class="box">
+    <div class="top-container">
       <!-- Batterie -->
 
-      <v-row>
+      <div class="data">
         <img
           class="icon"
           src="./assets/icons8-nombreuses-batteries-90.png"
@@ -83,21 +83,21 @@ onMounted(async () => {
           :data_name="'battery_current_a'"
           :symbol="'A'"
         ></coloredData>
-      </v-row>
+      </div>
 
       <!-- Moteur -->
 
-      <v-row>
+      <div class="data">
         <img class="icon" src="./assets/icons8-moteur-90.png" alt="" />
 
         <coloredData :data_name="'motor_voltage_v'" :symbol="'V'"></coloredData>
         <coloredData :data_name="'motor_current_a'" :symbol="'A'"></coloredData>
         <coloredData :data_name="'motor_temp'" :symbol="'°C'"></coloredData>
-      </v-row>
+      </div>
 
       <!-- PAC -->
 
-      <v-row>
+      <div class="data">
         <img class="icon" src="./assets/icons8-hydrogène-100.png" alt="" />
         <coloredData :data_name="'pac_voltage_v'" :symbol="'V'"></coloredData>
         <coloredData :data_name="'pac_current_a'" :symbol="'V'"></coloredData>
@@ -105,19 +105,28 @@ onMounted(async () => {
           :data_name="'pac_temperature_c'"
           :symbol="'°C'"
         ></coloredData>
-      </v-row>
-    </v-container>
+      </div>
+    </div>
 
     <!-- GPS -->
-  </v-col>
+  </div>
 </template>
 
 <style>
 
 
-.top-container {
+.box {
+  
+}
+
+.data {
+}
+
+.top-container {/*
+  display: flex;
+  flex: wrap; */
+  align-content: center;
   border: 2px solid white;
-  width: min-content;
 }
 
 :root {
