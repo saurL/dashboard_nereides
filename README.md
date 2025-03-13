@@ -85,9 +85,11 @@ Lorsque le fichier `.deb` est prêt, vous devez le transférer vers votre Raspbe
 2. Ouvrez un terminal sur votre ordinateur local et exécutez la commande suivante pour transférer le fichier sur le Raspberry Pi :
 
    ```bash
-   scp chemin/vers/le/fichier_arm64.deb tac@adresse_ip_du_pi:/home/tac/Desktop
+   scp chemin/vers/le/fichier_arm64.deb nereides@adresse_ip_du_pi:/home/nereides/Desktop
    ```
 Remplacez `chemin/vers/le/fichier_arm64.deb` par le chemin du fichier téléchargé et `adresse_ip_du_pi` par l'adresse IP de votre Raspberry Pi. /!\ Vous devrez certainement être connecté au même wifi
+
+Si on vous demande un mot de passe c'est `raspberry`.
 ### 4. Installation du fichier `.deb` sur le Raspberry Pi
 Une fois le fichier transféré, connectez-vous à votre Raspberry Pi et installez le paquet `.deb` :
    ```bash
