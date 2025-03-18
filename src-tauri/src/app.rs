@@ -127,6 +127,7 @@ impl App {
                 info!("Démarrage de la lecture des données CAN");
 
                 loop {
+                    info!("dans la boucle de lecture");
                     match socket.read_frame() {
                         Ok(frame) => {
                             let id = frame.id();
