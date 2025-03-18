@@ -5,6 +5,38 @@ use log::{error, info};
 use tauri::{async_runtime::spawn, AppHandle, Emitter, Manager};
 
 use crate::csv_writer::Csv_writter;
+use std::collections::HashMap;
+
+fn main() {
+    // Initialisation d'un dictionnaire avec des noms de variables et des valeurs optionnelles
+    let mut mesures: HashMap<&str, Option<f64>> = HashMap::from([
+        (battery_voltage_v, None),
+        (battery_current_a, None),
+        (battery_soc, None),
+        (battery_soh, None),
+        (batterySE_temp, None),
+        (motor_controller_temp, None),
+        (motor_controller_status, None),
+        (gps_time, None),
+        (gps_millis, None),
+        (gps_latitude, None),
+        (gps_longitude, None),
+        (gps_vitesse, None),
+        (mottor_current_a, None),
+        (mottor_voltage_v, None),
+        (mottor_current_a, None),
+        (mottor_throttle, None),
+        (mottor_temp, None),
+        (mottor_error_code, None),
+        (mottor_switch_signals_statuts, None),
+        (pac_emergency_stop, None),
+        (pac_start, None),
+        (pac_stop, None),
+        (pac_current_a, None),
+        (pac_voltage_v, None),
+        (pac_system_state, None),
+        (pac_error_flag, None),
+    ]);
 use crate::mqtt::MQTT;
 use rand::rngs::StdRng;
 use rand::{Rng, SeedableRng};
@@ -61,6 +93,7 @@ impl App {
             "pac_total_operation_time",
             "pac_total_produced_energy",
         ];
+        let data_api=[]
         let mut socket = None;
         let mqtt = MQTT::new();
         let scv_writer = Csv_writter::new();
@@ -110,9 +143,25 @@ impl App {
                 for data in &datas {
                     let value: f64 = rng.gen_range(0.0..100.0);
                     app_handle.emit(data, value).unwrap();
-                    mqtt.send_event(data, value);
-                    scv_writer.write_data(data, value).unwrap();
-                }
+
+                    // je donne la valeur que je reçois a un Some() ou option contenus dans ma structure
+                    fn update_mesures(mesures: &mut HashMap<&str, Option<f64>>, paquet: (&str, f64)) {
+                        let (nom_variable, valeur) = paquet;
+                        if let Some(variable) = mesures.get_mut(nom_variable) {
+                            *variable = Some(valeur);
+                        }
+                    }
+    
+
+                    // si tous les somes sont remlis j'effectue ces actions
+                    fn all_mesures_complete(mesures: &HashMap<&str, Option<f64>>) -> bool {
+                        mesures.values().all(|val| val.is_some())
+                    }
+                    if all_mesures_complete(&mesures) {
+                         mqtt.send_event(data, value);
+                         scv_writer.write_data(data, value).unwrap();
+                         }
+
                 sleep(Duration::from_secs(1)).await;
             }
         });
