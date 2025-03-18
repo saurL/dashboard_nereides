@@ -87,6 +87,9 @@ Lorsque le fichier `.deb` est prêt, vous devez le transférer vers votre Raspbe
    ```bash
    scp chemin/vers/le/fichier_arm64.deb nereides@adresse_ip_du_pi:/home/nereides/Desktop
    ```
+   ```
+   scp dashboard_0.1.0_arm64.deb nereides@192.168.105.221:/home/nereides/Desktop
+   ```
 Remplacez `chemin/vers/le/fichier_arm64.deb` par le chemin du fichier téléchargé et `adresse_ip_du_pi` par l'adresse IP de votre Raspberry Pi. /!\ Vous devrez certainement être connecté au même wifi
 
 Si on vous demande un mot de passe c'est `raspberry`.
