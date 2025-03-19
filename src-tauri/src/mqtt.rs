@@ -1,9 +1,8 @@
 use crate::constant::DATAS_NAMES;
 use chrono::Local;
-use log::{error, info};
+use indexmap::IndexMap;
+use log::error;
 use rumqttc::{Client, MqttOptions, QoS};
-use serde_json::error;
-use tokio::time::{sleep, Duration};
 #[derive(Clone)]
 pub struct MQTT {
     client: Client,
@@ -22,21 +21,21 @@ impl MQTT {
         mqttoptions.set_credentials(username, password);
         let (client, mut eventloop) = Client::new(mqttoptions, 10);
 
-        // Liste des topics
-        let topics = DATAS_NAMES.clone();
         MQTT { client, topic }
     }
 
-    pub fn send_event(&self, data_name: &str, data: f64) {
+    pub fn send_event(&self, data: IndexMap<&'static str, f64>) {
         let timestamp = Local::now().timestamp().to_string();
-        let full_topic = format!("{}/{}/{}", self.topic, timestamp, data_name);
-        let bytes: Vec<u8> = data.to_le_bytes().to_vec();
+        for (data_name, value) in data {
+            let full_topic = format!("{}/{}/{}", self.topic, timestamp, data_name);
+            let bytes: Vec<u8> = value.to_le_bytes().to_vec();
 
-        if let Err(e) = self
-            .client
-            .publish(full_topic, QoS::AtLeastOnce, false, bytes)
-        {
-            error!("Erreur lors de l'envoi du message MQTT : {}", e);
+            if let Err(e) = self
+                .client
+                .publish(full_topic, QoS::AtLeastOnce, false, bytes)
+            {
+                error!("Erreur lors de l'envoi du message MQTT : {}", e);
+            }
         }
     }
 }

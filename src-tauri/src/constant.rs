@@ -5,6 +5,8 @@ pub static CSV_DIR_PATH: &str = "C:\\nereides_data\\";
 #[cfg(target_os = "linux")]
 pub static CSV_DIR_PATH: &str = "/home/$USER/.local/share/mon_app/";
 
+pub static SCV_FILE_NAME: &str = "nereides_data";
+
 pub static DATAS_NAMES: LazyLock<Vec<&str>> = LazyLock::new(|| {
     vec![
         "gps_millis",
