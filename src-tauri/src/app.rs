@@ -92,7 +92,7 @@ impl App {
         instance
     }
 
-    pub fn threat_data(&mut self, data_name: &str, value: f64) {
+    pub fn treat_data(&mut self, data_name: &str, value: f64) {
         self.app_handle.emit(data_name, value).unwrap();
         self.update_mesures(data_name, value);
         if self.all_mesures_complete() {
@@ -140,7 +140,7 @@ impl App {
                 let datas = instance.datas.clone();
                 for data_name in datas {
                     let value: f64 = rng.gen_range(0.0..100.0);
-                    instance.threat_data(data_name, value);
+                    instance.treat_data(data_name, value);
                 }
                 sleep(Duration::from_millis(100)).await;
             }
