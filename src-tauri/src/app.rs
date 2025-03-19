@@ -69,6 +69,7 @@ impl App {
         #[cfg(target_os = "linux")]
         {
             if let Ok(can_socket) = CanSocket::open("can0") {
+                can_socket.set_nonblocking(true);
                 socket = Some(can_socket);
             } else {
                 error!("Impossible d'ouvrir le bus CAN");
@@ -127,6 +128,7 @@ impl App {
                 info!("Démarrage de la lecture des données CAN");
 
                 loop {
+                    info!("dans la boucle de lecture");
                     match socket.read_frame() {
                         Ok(frame) => {
                             let id = frame.id();
