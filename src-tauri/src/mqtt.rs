@@ -1,41 +1,72 @@
-use crate::constant::DATAS_NAMES;
-use chrono::Local;
 use indexmap::IndexMap;
-use log::error;
-use rumqttc::{Client, MqttOptions, QoS};
-#[derive(Clone)]
+use log::{error, info};
+use paho_mqtt::{AsyncClient, ConnectOptionsBuilder, CreateOptionsBuilder, Message, QoS};
+use std::{sync::Arc, time::Duration};
+use tauri::async_runtime::spawn;
+
+// Structure de l'acteur MQTT
 pub struct MQTT {
-    client: Client,
-
-    topic: String,
+    client: AsyncClient,
 }
+
 impl MQTT {
-    pub fn new() -> MQTT {
-        let broker = "172.20.10.2";
+    pub fn new() -> Arc<MQTT> {
+        let broker = "test.mosquitto.org";
         let port = 1883;
-        let username = "nereides";
-        let password = "raspberry";
+
         let topic = "testTopic".to_string();
+        let uri: String = format!("tcp://{}:{}", broker, port);
+        let create_opts = CreateOptionsBuilder::new()
+            .server_uri(uri)
+            .client_id("rust_client")
+            .finalize();
 
-        let mut mqttoptions = MqttOptions::new("rust_mqtt_client", broker, port);
-        mqttoptions.set_credentials(username, password);
-        let (client, mut eventloop) = Client::new(mqttoptions, 10);
-
-        MQTT { client, topic }
+        let client = AsyncClient::new(create_opts).unwrap();
+        // Retourner l'acteur et le récepteur
+        let instance = Arc::new(MQTT { client });
+        instance.connect();
+        instance
     }
 
-    pub fn send_event(&self, data: IndexMap<&'static str, f64>) {
-        let timestamp = Local::now().timestamp().to_string();
-        for (data_name, value) in data {
-            let full_topic = format!("{}/{}/{}", self.topic, timestamp, data_name);
-            let bytes: Vec<u8> = value.to_le_bytes().to_vec();
-
-            if let Err(e) = self
-                .client
-                .publish(full_topic, QoS::AtLeastOnce, false, bytes)
-            {
-                error!("Erreur lors de l'envoi du message MQTT : {}", e);
+    pub fn connect(self: &Arc<Self>) {
+        let instance = self.clone();
+        spawn(async move {
+            let username = "nereides";
+            let password = "raspberry";
+            let conn_opts = ConnectOptionsBuilder::new()
+                .keep_alive_interval(Duration::from_secs(20))
+                .automatic_reconnect(Duration::from_secs(1), Duration::from_secs(60))
+                .clean_session(true)
+                //.password(password)
+                // .user_name(username)
+                .finalize();
+            info!("Connecting to the MQTT broker");
+            if let Err(e) = instance.client.connect(conn_opts).await {
+                error!("Error connecting: {:?}", e);
+                return;
             }
+            info!("Connected to the MQTT broker");
+        });
+    }
+
+    // Fonction pour envoyer un événement
+    pub fn send_event(self: &Arc<Self>, data: IndexMap<&'static str, f64>) {
+        if !self.client.is_connected() {
+            info!("MQTT client is not connected, cannot send event.");
+            return;
         }
+        let instance = self.clone();
+        spawn(async move {
+            for (data_name, value) in data {
+                let full_topic = format!("nereides/{}", data_name);
+                let bytes: Vec<u8> = value.to_le_bytes().to_vec();
+                let message = Message::new(full_topic.clone(), bytes.clone(), QoS::AtLeastOnce);
+                if let Err(e) = instance.client.publish(message).await {
+                    error!("Failed to publish message: {}", e);
+                    return;
+                }
+                info!("Published message: {} to topic: {}", value, full_topic);
+            }
+        });
     }
 }

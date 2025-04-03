@@ -2,26 +2,44 @@ mod app;
 mod constant;
 mod csv_writer;
 mod mqtt;
+mod uart_communication;
 use app::App;
-use log::info;
-use std::sync::Arc;
-use tauri::{async_runtime::spawn, Emitter};
-use tauri::{AppHandle, Manager};
-use tokio::sync::Mutex;
-use tokio::time::{sleep, Duration};
+use std::env;
+use tauri::Manager;
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
+use log::info;
+use tauri_plugin_autostart::MacosLauncher;
+use tauri_plugin_autostart::ManagerExt;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    env::set_var("RUST_LOG", "pago_mqtt=off");
+
     tauri::Builder::default()
+        .plugin(tauri_plugin_autostart::init(
+            MacosLauncher::LaunchAgent,
+            Some(vec![]),
+        ))
         .setup(|app| {
             app.manage(App::new(app.handle().clone()));
+
+            // Get the autostart manager
+            let autostart_manager = app.autolaunch();
+            // Enable autostart
+            let _ = autostart_manager.enable();
+            // Check enable state
+            info!(
+                "registered for autostart? {}",
+                autostart_manager.is_enabled().unwrap()
+            );
 
             Ok(())
         })
         .plugin(tauri_plugin_shell::init())
         .plugin(
             tauri_plugin_log::Builder::new()
+                .level_for("paho_mqtt", log::LevelFilter::Off)
+                .level_for("paho_mqtt_c", log::LevelFilter::Off)
                 .target(tauri_plugin_log::Target::new(
                     tauri_plugin_log::TargetKind::LogDir {
                         file_name: Some("logs".to_string()),
@@ -36,5 +54,3 @@ pub fn run() {
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
-
-

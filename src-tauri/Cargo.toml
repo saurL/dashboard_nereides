@@ -18,6 +18,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
+openssl = { version = "0.10", features = ["vendored"] }
 tauri = { version = "2", features = [] }
 tauri-plugin-shell = "2"
 serde = { version = "1", features = ["derive"] }
@@ -30,6 +31,14 @@ rand = "0.8"
 rumqttc = "0.24"
 chrono = "0.4"
 indexmap = "1.9"
+paho-mqtt = "0.13.1"
+serialport = "4.0.0"
 
 [target.'cfg(unix)'.dependencies]
 socketcan = "2.0"
+serialport = "4.0.0"
+
+
+
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-autostart = "2"

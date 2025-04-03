@@ -1,30 +1,37 @@
 use std::sync::Arc;
+use std::time::Duration;
 
 use log::info;
 
+use serde::de;
 use tauri::{async_runtime::spawn, AppHandle, Emitter};
+use tokio::sync::Mutex;
+use tokio::time::sleep;
 
 use crate::csv_writer::Csv_writter;
 use indexmap::IndexMap;
 
 use crate::mqtt::MQTT;
+use crate::uart_communication::UartCommunication;
 use rand::rngs::StdRng;
 use rand::{Rng, SeedableRng};
+use serde_json::Value;
+use tokio::sync::mpsc::{channel, Receiver};
 #[cfg(target_os = "linux")]
-use socketcan::{CanSocket, EmbeddedFrame, Socket};
 use tokio::time::{sleep, Duration};
 #[derive(Clone)]
 pub struct App {
     #[cfg(target_os = "linux")]
-    can_socket: Option<Arc<CanSocket>>,
+    uart_communication: Option<Arc<UartCommunication>>,
 
     #[cfg(not(target_os = "linux"))]
-    can_socket: Option<Arc<()>>, // Remplacer par un type générique ou un autre champ si nécessaire.
+    uart_communication: Option<Arc<()>>, // Remplacer par un type générique ou un autre champ si nécessaire.
     app_handle: AppHandle,
     datas: Vec<&'static str>,
-    mqtt: MQTT,
+    mqtt: Arc<MQTT>,
     scv_writer: Csv_writter,
     data_api: IndexMap<&'static str, Option<f64>>,
+    rx: Arc<Mutex<Receiver<Value>>>,
 }
 
 impl App {
@@ -65,28 +72,25 @@ impl App {
         ];
         let data_api: IndexMap<&'static str, Option<f64>> =
             data_api_str.iter().map(|&key| (key, None)).collect();
-        let mut socket = None;
+        let uart_communication = None;
         let mqtt = MQTT::new();
         let scv_writer = Csv_writter::new(data_api.clone());
+        let (tx, rx) = channel::<Value>(32);
 
         // S'assurer que le code avec socketcan est uniquement exécuté sur Linux
         #[cfg(target_os = "linux")]
         {
-            if let Ok(can_socket) = CanSocket::open("can0") {
-                can_socket.set_nonblocking(true);
-                socket = Some(can_socket);
-            } else {
-                error!("Impossible d'ouvrir le bus CAN");
-            }
+            let uart_communication = Some(UartCommunication::new("/dev/ttyUSB0", 115200, tx));
         }
 
         let instance = App {
-            can_socket: socket.map(Arc::new),
+            uart_communication,
             app_handle,
             datas: datas.to_vec(),
             mqtt,
             scv_writer,
             data_api,
+            rx: Arc::new(Mutex::new(rx)),
         };
         instance.run();
         instance
@@ -121,7 +125,7 @@ impl App {
     pub fn run(&self) {
         #[cfg(target_os = "linux")]
         {
-            self.read_can_data();
+            self.listen_uart_event();
         }
         #[cfg(target_os = "windows")]
         {
@@ -142,7 +146,33 @@ impl App {
                     let value: f64 = rng.gen_range(0.0..100.0);
                     instance.treat_data(data_name, value);
                 }
-                sleep(Duration::from_millis(100)).await;
+                sleep(Duration::from_millis(1000)).await;
+            }
+        });
+    }
+    #[cfg(target_os = "linux")]
+    pub fn listen_uart_event(&self) {
+        let rx = self.rx.clone();
+        let mut instance = self.clone();
+        spawn(async move {
+            info!("Démarrage du traitement des JSON reçus");
+
+            while let Some(json_value) = rx.lock().await.recv().await {
+                if let Value::Object(map) = json_value {
+                    if let (Some(Value::String(id)), Some(Value::Number(value))) =
+                        (map.get("id"), map.get("value"))
+                    {
+                        if let Some(value) = value.as_f64() {
+                            instance.treat_data(id, value);
+                        } else {
+                            info!("Valeur non numérique pour la clé 'value'");
+                        }
+                    } else {
+                        info!("Champs 'id' ou 'value' manquants ou invalides dans le JSON");
+                    }
+                } else {
+                    info!("JSON reçu n'est pas un objet valide");
+                }
             }
         });
     }
