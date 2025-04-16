@@ -17,8 +17,7 @@ use rand::rngs::StdRng;
 use rand::{Rng, SeedableRng};
 use serde_json::Value;
 use tokio::sync::mpsc::{channel, Receiver};
-#[cfg(target_os = "linux")]
-use tokio::time::{sleep, Duration};
+use crate::uart_communication::UartData;
 #[derive(Clone)]
 pub struct App {
     #[cfg(target_os = "linux")]
@@ -31,7 +30,7 @@ pub struct App {
     mqtt: Arc<MQTT>,
     scv_writer: Csv_writter,
     data_api: IndexMap<&'static str, Option<f64>>,
-    rx: Arc<Mutex<Receiver<Value>>>,
+    rx: Arc<Mutex<Receiver<UartData>>>,
 }
 
 impl App {
@@ -75,7 +74,7 @@ impl App {
         let uart_communication = None;
         let mqtt = MQTT::new();
         let scv_writer = Csv_writter::new(data_api.clone());
-        let (tx, rx) = channel::<Value>(32);
+        let (tx, rx) = channel::<UartData>(32);
 
         // S'assurer que le code avec socketcan est uniquement exécuté sur Linux
         #[cfg(target_os = "linux")]
@@ -96,7 +95,7 @@ impl App {
         instance
     }
 
-    pub fn treat_data(&mut self, data_name: &str, value: f64) {
+    pub fn treat_data(&mut self, data_name:&str , value: f64) {
         self.app_handle.emit(data_name, value).unwrap();
         self.update_mesures(data_name, value);
         if self.all_mesures_complete() {
@@ -111,6 +110,12 @@ impl App {
                 *value = None;
             }
         }
+    }
+
+    pub fn treat_data_string(&mut self, data_name:&str , value: String) {
+        self.app_handle.emit(data_name, value).unwrap();
+
+
     }
     pub fn update_mesures(&mut self, data_name: &str, value: f64) {
         if let Some(data) = self.data_api.get_mut(data_name) {
@@ -158,53 +163,18 @@ impl App {
             info!("Démarrage du traitement des JSON reçus");
 
             while let Some(json_value) = rx.lock().await.recv().await {
-                if let Value::Object(map) = json_value {
-                    if let (Some(Value::String(id)), Some(Value::Number(value))) =
-                        (map.get("id"), map.get("value"))
-                    {
-                        if let Some(value) = value.as_f64() {
-                            instance.treat_data(id, value);
-                        } else {
-                            info!("Valeur non numérique pour la clé 'value'");
-                        }
-                    } else {
-                        info!("Champs 'id' ou 'value' manquants ou invalides dans le JSON");
-                    }
-                } else {
-                    info!("JSON reçu n'est pas un objet valide");
+                match json_value{
+                    UartData::Number(json_value) => {
+                        instance.treat_data(&json_value.data_name, json_value.value);
+                    
+                }
+                UartData::String(json_value) => {
+                    instance.treat_data_string(&json_value.data_name, json_value.value);
                 }
             }
-        });
-    }
-}
-
-#[cfg(target_os = "linux")]
-pub fn read_can_data(&self) {
-    let can_socket = self.can_socket.clone();
-
-    if let Some(socket) = can_socket {
-        let app_handle = self.app_handle.clone();
-        spawn(async move {
-            info!("Démarrage de la lecture des données CAN");
-
-            loop {
-                info!("dans la boucle de lecture");
-                match socket.read_frame() {
-                    Ok(frame) => {
-                        let id = frame.id();
-                        let data = frame.data();
-                        info!("Donnée reçue {:?} {:?}", id, data);
-                        // Traitez les données du frame ici et émettez des événements en conséquence
-                        // Par exemple, vous pouvez convertir les données en une valeur et émettre un événement
-                        let value = data[0] as f64; // Conversion simplifiée pour l'exemple
-                        app_handle.emit("donnée", value).unwrap();
-                    }
-                    Err(e) => {
-                        error!("Erreur lors de la lecture du frame CAN: {:?}", e);
-                    }
-                }
-                sleep(Duration::from_millis(100)).await; // Ajustez la fréquence de lecture si nécessaire
             }
         });
+        
     }
+
 }
