@@ -62,7 +62,7 @@ impl UartCommunication {
                                 error!("Invalid data length: {}", size);
                                 break; // ou `return` si tu veux quitter complètement
                             }
-
+                            info!("Total buffer state: {:?}", total_buffer);
                             let data = &total_buffer[bytes_read..bytes_read + size as usize];
 
                             let data_str = match std::str::from_utf8(data) {
