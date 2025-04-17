@@ -49,10 +49,11 @@ impl UartCommunication {
         let port_clone = self.port.clone();
         let tx: Sender<UartData> = self.tx.clone();
         spawn(async move {
-            let mut buffer = vec![0u8; 1024];
             let mut total_buffer = Vec::new();
             loop {
                 let mut port = port_clone.lock().await;
+                let mut buffer = vec![0u8; 1024];
+
                 match port.read(&mut buffer) {
                     Ok(bytes_read) => {
                         total_buffer.extend(buffer);
