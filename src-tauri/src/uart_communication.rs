@@ -68,6 +68,8 @@ impl UartCommunication {
                                         continue;
                                     }
                                 };
+                                info!("Received raw data: {:?}", data);
+                                // Parse the JSON data
                                 let json_value: UartData = match serde_json::from_str(data_str) {
                                     Ok(json) => json,
                                     Err(e) => {
