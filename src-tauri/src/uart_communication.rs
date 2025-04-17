@@ -1,5 +1,6 @@
 use log::{error, info};
-use serde_json::Value;
+use serde::{de, Deserialize, Serialize};
+
 use serialport::SerialPort;
 use std::sync::Arc;
 use std::time::Duration;
@@ -8,12 +9,29 @@ use tokio::sync::Mutex;
 #[derive(Clone)]
 pub struct UartCommunication {
     port: Arc<Mutex<Box<dyn SerialPort>>>,
-    tx: Sender<Value>,
+    tx: Sender<UartData>,
+}
+#[derive(Deserialize, Serialize)]
+pub struct UartDataNumber {
+    pub data_name: String,
+    pub value: f64,
+}
+#[derive(Deserialize, Serialize)]
+
+pub struct UartDataString {
+    pub data_name: String,
+    pub value: String,
+}
+#[derive( Deserialize)]
+#[serde(untagged)]
+pub enum UartData {
+    Number(UartDataNumber),
+    String(UartDataString),
 }
 
 impl UartCommunication {
-    pub fn new(port_name: &str, baud_rate: u32, tx: Sender<Value>) -> Self {
-        let mut port: Box<dyn SerialPort> = serialport::new(port_name, baud_rate)
+    pub fn new(port_name: &str, baud_rate: u32, tx: Sender<UartData>) -> Self {
+        let port: Box<dyn SerialPort> = serialport::new(port_name, baud_rate)
             .timeout(Duration::from_millis(10))
             .open()
             .expect("Failed to open port");
@@ -22,20 +40,13 @@ impl UartCommunication {
             port: Arc::new(port.into()),
             tx,
         };
-        instance.start_reading_thread();
+        instance.start_reading();
         instance
     }
 
-    pub async fn send_data(&self, data: &[u8]) -> Result<(), std::io::Error> {
-        let mut port = self.port.lock().await;
-        port.write_all(data)?;
-        info!("Data sent: {:?}", data);
-        Ok(())
-    }
-
-    pub fn start_reading_thread(&self) -> tokio::task::JoinHandle<()> {
+    pub fn start_reading(&self) -> tokio::task::JoinHandle<()> {
         let port_clone = self.port.clone();
-        let tx = self.tx.clone();
+        let tx: Sender<UartData> = self.tx.clone();
         tokio::spawn(async move {
             let mut buffer = vec![0u8; 1024];
             loop {
@@ -56,7 +67,7 @@ impl UartCommunication {
                                         continue;
                                     }
                                 };
-                                let json_value: serde_json::Value =
+                                let json_value:UartData  =
                                     match serde_json::from_str(data_str) {
                                         Ok(json) => json,
                                         Err(e) => {
