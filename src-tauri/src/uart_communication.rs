@@ -4,7 +4,7 @@ use serde::{de, Deserialize, Serialize};
 use serialport::SerialPort;
 use std::sync::Arc;
 use std::time::Duration;
-use tauri::async_runtime::spawn;
+use tauri::async_runtime::{spawn,JoinHandle};
 use tokio::sync::mpsc::Sender;
 use tokio::sync::Mutex;
 #[derive(Clone)]
@@ -45,7 +45,7 @@ impl UartCommunication {
         instance
     }
 
-    pub fn start_reading(&self) -> tokio::task::JoinHandle<()> {
+    pub fn start_reading(&self) -> JoinHandle<()> {
         let port_clone = self.port.clone();
         let tx: Sender<UartData> = self.tx.clone();
         spawn(async move {
