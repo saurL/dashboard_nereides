@@ -110,6 +110,7 @@ fn decode_varint(buffer: &[u8]) -> Result<Option<(u64, usize)>, std::io::Error> 
 
         // Si le bit de continuation (0x80) est désactivé, la lecture est terminée
         if *byte & 0x80 == 0 {
+            info!("Decoded varint: {} ({} bytes)", value, bytes_read);
             return Ok(Some((value, bytes_read)));
         }
 
