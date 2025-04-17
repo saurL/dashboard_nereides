@@ -37,6 +37,7 @@ serialport = "4.0.0"
 [target.'cfg(unix)'.dependencies]
 socketcan = "2.0"
 serialport = "4.0.0"
+linux-embedded-hal = "0.4.0"
 
 
 

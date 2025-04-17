@@ -3,6 +3,7 @@ mod constant;
 mod csv_writer;
 mod mqtt;
 mod uart_communication;
+mod gps;
 use app::App;
 use std::env;
 use tauri::Manager;

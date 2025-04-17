@@ -13,6 +13,7 @@ use indexmap::IndexMap;
 
 use crate::mqtt::MQTT;
 use crate::uart_communication::UartCommunication;
+use crate::gps::Gps;
 use rand::rngs::StdRng;
 use rand::{Rng, SeedableRng};
 use serde_json::Value;
@@ -31,6 +32,7 @@ pub struct App {
     scv_writer: Csv_writter,
     data_api: IndexMap<&'static str, Option<f64>>,
     rx: Arc<Mutex<Receiver<UartData>>>,
+    gps: Gps,
 }
 
 impl App {
@@ -81,6 +83,7 @@ impl App {
         {
             let uart_communication = Some(UartCommunication::new("/dev/serial0", 115200, tx));
         }
+        let gps = Gps::new();
 
         let instance = App {
             uart_communication,
@@ -90,6 +93,7 @@ impl App {
             scv_writer,
             data_api,
             rx: Arc::new(Mutex::new(rx)),
+            gps
         };
         instance.run();
         instance
@@ -102,7 +106,7 @@ impl App {
             let data: IndexMap<&str, Option<f64>> = self.data_api.clone();
             let filtered_data: IndexMap<&str, f64> = data
                 .iter()
-                .filter_map(|(&key, &value)| value.map(|v| (key, v)))
+                .filter_map(|(&key, value)| value.map(|v| (key, v)))
                 .collect();
             self.scv_writer.write_data(filtered_data.clone()).unwrap();
             self.mqtt.send_event(filtered_data);
