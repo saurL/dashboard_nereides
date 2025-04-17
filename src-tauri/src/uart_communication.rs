@@ -4,6 +4,7 @@ use serde::{de, Deserialize, Serialize};
 use serialport::SerialPort;
 use std::sync::Arc;
 use std::time::Duration;
+use tauri::async_runtime::spawn;
 use tokio::sync::mpsc::Sender;
 use tokio::sync::Mutex;
 #[derive(Clone)]
@@ -22,7 +23,7 @@ pub struct UartDataString {
     pub data_name: String,
     pub value: String,
 }
-#[derive( Deserialize)]
+#[derive(Deserialize)]
 #[serde(untagged)]
 pub enum UartData {
     Number(UartDataNumber),
@@ -47,7 +48,7 @@ impl UartCommunication {
     pub fn start_reading(&self) -> tokio::task::JoinHandle<()> {
         let port_clone = self.port.clone();
         let tx: Sender<UartData> = self.tx.clone();
-        tokio::spawn(async move {
+        spawn(async move {
             let mut buffer = vec![0u8; 1024];
             loop {
                 let mut port = port_clone.lock().await;
@@ -67,14 +68,13 @@ impl UartCommunication {
                                         continue;
                                     }
                                 };
-                                let json_value:UartData  =
-                                    match serde_json::from_str(data_str) {
-                                        Ok(json) => json,
-                                        Err(e) => {
-                                            error!("Failed to parse JSON: {}", e);
-                                            continue;
-                                        }
-                                    };
+                                let json_value: UartData = match serde_json::from_str(data_str) {
+                                    Ok(json) => json,
+                                    Err(e) => {
+                                        error!("Failed to parse JSON: {}", e);
+                                        continue;
+                                    }
+                                };
                                 info!("Received data: {}", data_str);
                                 if tx.send(json_value).await.is_err() {
                                     error!("Failed to send data to channel");
