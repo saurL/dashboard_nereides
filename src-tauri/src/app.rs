@@ -80,7 +80,7 @@ impl App {
         // S'assurer que le code avec socketcan est uniquement exécuté sur Linux
         #[cfg(target_os = "linux")]
         {
-            let uart_communication = Some(UartCommunication::new("/dev/ttyUSB0", 115200, tx));
+            let uart_communication = Some(UartCommunication::new("/dev/serial0", 115200, tx));
         }
 
         let instance = App {

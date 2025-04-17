@@ -13,8 +13,8 @@
     "windows": [
       {
         "title": "dashboard",
-        "width": 412,
-        "height": 249,
+        "width": 800,
+        "height": 480,
         "devtools": true
       }
     ],
