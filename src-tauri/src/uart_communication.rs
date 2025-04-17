@@ -4,7 +4,7 @@ use serde::{de, Deserialize, Serialize};
 use serialport::SerialPort;
 use std::sync::Arc;
 use std::time::Duration;
-use tauri::async_runtime::{spawn,JoinHandle};
+use tauri::async_runtime::{spawn, JoinHandle};
 use tokio::sync::mpsc::Sender;
 use tokio::sync::Mutex;
 #[derive(Clone)]
@@ -56,11 +56,15 @@ impl UartCommunication {
                     Ok(bytes_read) if bytes_read > 0 => match decode_varint(&buffer) {
                         Ok(some) => match some {
                             Some((size, bytes_read)) => {
+                                info!("buffer state: {:?}", buffer);
+                                info!("Data length: {}", size);
+                                info!("Bytes read: {}", bytes_read);
                                 if size as usize > buffer.len() - bytes_read {
                                     error!("Invalid data length: {}", size);
                                     continue;
                                 }
                                 let data = &buffer[bytes_read..bytes_read + size as usize];
+                                info!("Data raw: {:?}", data);
                                 let data_str = match std::str::from_utf8(data) {
                                     Ok(s) => s,
                                     Err(e) => {
@@ -68,7 +72,8 @@ impl UartCommunication {
                                         continue;
                                     }
                                 };
-                                info!("Received raw data: {:?}", data);
+                                info!("Data string: {}", data_str);
+
                                 // Parse the JSON data
                                 let json_value: UartData = match serde_json::from_str(data_str) {
                                     Ok(json) => json,
