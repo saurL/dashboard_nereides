@@ -50,50 +50,52 @@ impl UartCommunication {
         let tx: Sender<UartData> = self.tx.clone();
         spawn(async move {
             let mut buffer = vec![0u8; 1024];
+            let mut total_buffer = Vec::new();
             loop {
                 let mut port = port_clone.lock().await;
                 match port.read(&mut buffer) {
-                    Ok(bytes_read) if bytes_read > 0 => match decode_varint(&buffer) {
-                        Ok(some) => match some {
-                            Some((size, bytes_read)) => {
-                                info!("buffer state: {:?}", buffer);
-                                info!("Data length: {}", size);
-                                info!("Bytes read: {}", bytes_read);
-                                if size as usize > buffer.len() - bytes_read {
-                                    error!("Invalid data length: {}", size);
+                    Ok(bytes_read) => {
+                        total_buffer.extend(buffer);
+                        while let Ok(Some((size, bytes_read))) = decode_varint(&total_buffer) {
+                            if size as usize > total_buffer.len() - bytes_read {
+                                error!("Invalid data length: {}", size);
+                                break; // ou `return` si tu veux quitter complètement
+                            }
+
+                            let data = &total_buffer[bytes_read..bytes_read + size as usize];
+
+                            let data_str = match std::str::from_utf8(data) {
+                                Ok(s) => s,
+                                Err(e) => {
+                                    error!("Failed to convert data to string: {}", e);
+                                    // on saute ce message, mais on enlève les données consommées
+                                    total_buffer =
+                                        total_buffer[bytes_read + size as usize..].to_vec();
                                     continue;
                                 }
-                                let data = &buffer[bytes_read..bytes_read + size as usize];
-                                info!("Data raw: {:?}", data);
-                                let data_str = match std::str::from_utf8(data) {
-                                    Ok(s) => s,
-                                    Err(e) => {
-                                        error!("Failed to convert data to string: {}", e);
-                                        continue;
-                                    }
-                                };
-                                info!("Data string: {}", data_str);
+                            };
 
-                                // Parse the JSON data
-                                let json_value: UartData = match serde_json::from_str(data_str) {
-                                    Ok(json) => json,
-                                    Err(e) => {
-                                        error!("Failed to parse JSON: {}", e);
-                                        continue;
-                                    }
-                                };
-                                info!("Received data: {}", data_str);
-                                if tx.send(json_value).await.is_err() {
-                                    error!("Failed to send data to channel");
+                            info!("Data string: {}", data_str);
+
+                            let json_value: UartData = match serde_json::from_str(data_str) {
+                                Ok(json) => json,
+                                Err(e) => {
+                                    error!("Failed to parse JSON: {}", e);
+                                    total_buffer =
+                                        total_buffer[bytes_read + size as usize..].to_vec();
+                                    continue;
                                 }
-                                buffer = buffer[..size as usize].to_vec();
+                            };
+
+                            info!("Received data: {}", data_str);
+                            if tx.send(json_value).await.is_err() {
+                                error!("Failed to send data to channel");
                             }
-                            None => continue,
-                        },
-                        Err(e) => {
-                            error!("Failed to decode varint: {}", e);
+
+                            // Supprime le message traité du buffer
+                            total_buffer = total_buffer[bytes_read + size as usize..].to_vec();
                         }
-                    },
+                    }
                     Ok(_) => continue,
                     Err(e) => {
                         error!("Error reading from UART: {}", e);
