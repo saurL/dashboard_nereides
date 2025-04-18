@@ -83,7 +83,7 @@ impl UartCommunication {
                                         .unwrap_or(0);
                                     total_buffer =
                                         total_buffer[start -1 ..].to_vec();
-                                    continue;
+                                    break;
                                 }
                             };
 
