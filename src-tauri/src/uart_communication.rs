@@ -58,16 +58,17 @@ impl UartCommunication {
                     Ok(bytes_read) if bytes_read > 0 => {
                         buffer= buffer[..bytes_read].into();
                         total_buffer.extend(buffer);
+                        info!("Total buffer state: {:?}", total_buffer);
+                            match std::str::from_utf8(&total_buffer) {
+                                Ok(s) => info!("Total buffer as string: {:?}", s),
+                                Err(e) => {}
+                            };
                         while let Ok(Some((size, bytes_read))) = decode_varint(&total_buffer) {
                             if size as usize > total_buffer.len() - bytes_read {
                                 error!("Invalid data length: {}", size);
                                 break; // ou `return` si tu veux quitter complètement
                             }
-                            info!("Total buffer state: {:?}", total_buffer);
-                            match std::str::from_utf8(&total_buffer) {
-                                Ok(s) => info!("Total buffer as string: {:?}", s),
-                                Err(e) => {}
-                            };
+                            
                             let data = &total_buffer[bytes_read..bytes_read + size as usize];
 
                             let data_str = match std::str::from_utf8(data) {
