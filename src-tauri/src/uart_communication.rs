@@ -63,6 +63,10 @@ impl UartCommunication {
                                 break; // ou `return` si tu veux quitter complètement
                             }
                             info!("Total buffer state: {:?}", total_buffer);
+                            match std::str::from_utf8(&total_buffer) {
+                                Ok(s) => info!(("Total buffer as string: {:?}", s)),
+                                Err(e) => {}
+                            };
                             let data = &total_buffer[bytes_read..bytes_read + size as usize];
 
                             let data_str = match std::str::from_utf8(data) {
