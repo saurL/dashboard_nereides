@@ -74,10 +74,15 @@ impl UartCommunication {
                             let data_str = match std::str::from_utf8(data) {
                                 Ok(s) => s,
                                 Err(e) => {
-                                    error!("Failed to convert data to string: {}", e);
-                                    // on saute ce message, mais on enlève les données consommées
+                                    error!("Failed to convert data to string: {} Cette erreur n'est absolument pas normale , des données sont perdues et pour que la communication perdure \nNous allons tronquer le buffer jusqu'a obtenir le prochain début de message", e);
+                                    //S'il y a des caratères non valide, on tronque le buffer jusqu'au prochain début de message
+                                    // On cherche le prochain début de message
+                                    let start = total_buffer
+                                        .iter()
+                                        .position(|&x| x == 123)
+                                        .unwrap_or(0);
                                     total_buffer =
-                                        total_buffer[bytes_read + size as usize..].to_vec();
+                                        total_buffer[start -1 ..].to_vec();
                                     continue;
                                 }
                             };
