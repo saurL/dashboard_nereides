@@ -7,6 +7,9 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { listen } from "@tauri-apps/api/event";
+import {
+info
+} from '@tauri-apps/plugin-log';
 const props = defineProps({
   data_name: {
     type: String,
@@ -42,6 +45,7 @@ const range = computed(() => computedDangerMaxValue.value - props.minValue);
 
 const displayed_data = ref(0);
 listen(props.data_name, (event) => {
+  info(`Received event: ${props.data_name}`);
   console.log(event);
   displayed_data.value = event.payload as number; // Traitement de l'événement
 });
