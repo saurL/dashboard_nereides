@@ -58,7 +58,22 @@ impl UartCommunication {
                     Ok(bytes_read) if bytes_read > 0 => {
                         buffer= buffer[..bytes_read].into();
                         total_buffer.extend(buffer);
+
                         info!("Total buffer state: {:?}", total_buffer);
+
+
+                        // Si jamais le deuxème élément du buffer n'est pas '{', on fait en sorte de chercher le prochain
+                        if total_buffer.len() > 1 && total_buffer[1] != b'{' {
+                            if let Some(pos) = total_buffer.iter().position(|&x| x == b'{') {
+                                total_buffer.drain(..pos); // Supprime tout jusqu'au premier '{'
+                                info!("Buffer after removing invalid data: {:?}", total_buffer);
+                            }
+                            else {
+                                error!("Invalid data format, no '{{' found");
+                                total_buffer.clear(); // ou `return` si tu veux quitter complètement
+                                continue;
+                            }
+                        }
                             match std::str::from_utf8(&total_buffer) {
                                 Ok(s) => info!("Total buffer as string: {:?}", s),
                                 Err(e) => {}
@@ -77,14 +92,10 @@ impl UartCommunication {
                                     error!("Failed to convert data to string: {} Cette erreur n'est absolument pas normale , des données sont perdues et pour que la communication perdure \nNous allons tronquer le buffer jusqu'a obtenir le prochain début de message", e);
                                     //S'il y a des caratères non valide, on tronque le buffer jusqu'au prochain début de message
                                     // On cherche le prochain début de message
-                                    let start = total_buffer
-                                        .iter()
-                                        .position(|&x| x == 123)
-                                        .unwrap_or(0);
-                                    total_buffer =
-                                        total_buffer[start -1 ..].to_vec();
-                                    info!("Buffer after truncation: {:?}", total_buffer);
-                                    break;
+                                  
+                                            total_buffer.clear();
+               
+                                    continue;
                                 }
                             };
 
