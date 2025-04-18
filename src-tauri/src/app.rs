@@ -100,6 +100,7 @@ impl App {
     }
 
     pub fn treat_data(&mut self, data_name:&str , value: f64) {
+        info!("Envoit de l'événement {} avec la valeur {}",data_name,value);
         self.app_handle.emit(data_name, value).unwrap();
         self.update_mesures(data_name, value);
         if self.all_mesures_complete() {

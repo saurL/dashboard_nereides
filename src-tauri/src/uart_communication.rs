@@ -64,7 +64,7 @@ impl UartCommunication {
 
                         // Si jamais le deuxème élément du buffer n'est pas '{', on fait en sorte de chercher le prochain
                         if total_buffer.len() > 1 && total_buffer[1] != b'{' {
-                            if let Some(pos) = total_buffer.iter().position(|&x| x == b'{') {
+                            if let Some(pos) = total_buffer.iter().skip(1).position(|&x| x == b'{') {
                                 total_buffer.drain(..pos); // Supprime tout jusqu'au premier '{'
                                 info!("Buffer after removing invalid data: {:?}", total_buffer);
                             }
