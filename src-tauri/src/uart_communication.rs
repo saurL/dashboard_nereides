@@ -12,18 +12,18 @@ pub struct UartCommunication {
     port: Arc<Mutex<Box<dyn SerialPort>>>,
     tx: Sender<UartData>,
 }
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize,Debug)]
 pub struct UartDataNumber {
     pub data_name: String,
     pub value: f64,
 }
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize,Debug)]
 
 pub struct UartDataString {
     pub data_name: String,
     pub value: String,
 }
-#[derive(Deserialize)]
+#[derive(Deserialize,Debug)]
 #[serde(untagged)]
 pub enum UartData {
     Number(UartDataNumber),
@@ -94,7 +94,7 @@ impl UartCommunication {
                                 }
                             };
 
-                            info!("Received data: {}", data_str);
+                            info!("Received data: {:?}", json_value);
                             if tx.send(json_value).await.is_err() {
                                 error!("Failed to send data to channel");
                             }
@@ -126,7 +126,6 @@ fn decode_varint(buffer: &[u8]) -> Result<Option<(u64, usize)>, std::io::Error> 
 
         // Si le bit de continuation (0x80) est désactivé, la lecture est terminée
         if *byte & 0x80 == 0 {
-            info!("Decoded varint: {} ({} bytes)", value, bytes_read);
             return Ok(Some((value, bytes_read)));
         }
 

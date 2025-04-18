@@ -167,7 +167,9 @@ impl App {
             info!("Démarrage du traitement des JSON reçus");
 
             while let Some(json_value) = rx.lock().await.recv().await {
+                info!("Received JSON: {:?}", json_value);
                 match json_value{
+
                     UartData::Number(json_value) => {
                         instance.treat_data(&json_value.data_name, json_value.value);
                     
