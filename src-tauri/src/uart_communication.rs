@@ -57,8 +57,8 @@ impl UartCommunication {
                 match port.read(&mut buffer) {
                     Ok(bytes_read) if bytes_read > 0 => {
                         // Retirer tous les 0 du buffer
-                        buffer.retain(|&x| x != 0);
                         buffer= buffer[..bytes_read].into();
+                        buffer.retain(|&x| x != 0);
                         
                         total_buffer.extend(buffer);
 
