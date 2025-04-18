@@ -56,6 +56,7 @@ impl UartCommunication {
 
                 match port.read(&mut buffer) {
                     Ok(bytes_read) if bytes_read > 0 => {
+                        buffer.retain(|&x| x != 0);
                         total_buffer.extend(buffer);
                         while let Ok(Some((size, bytes_read))) = decode_varint(&total_buffer) {
                             if size as usize > total_buffer.len() - bytes_read {
