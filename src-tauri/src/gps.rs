@@ -25,7 +25,7 @@ impl Gps {
         spawn(async move {
             info!("GPS: Initialisation de la lecture des données GPS");
             // Initialiser le périphérique I2C
-            let mut i2c: I2cdev = I2cdev::new("/dev/i2c-1").expect("Failed to open I2C device");
+            let mut i2c: I2cdev = I2cdev::new("/dev/i2c-2").expect("Failed to open I2C device");
             info!("GPS: Périphérique I2C ouvert avec succès");
             i2c.set_slave_address(0x42).expect("Failed to set slave address");
             let mut buffer = String::new();
