@@ -13,7 +13,6 @@
     "windows": [
       {
         "title": "dashboard",
-        "fullscreen": true,
         "decorations": false,
         "resizable": false
       }
