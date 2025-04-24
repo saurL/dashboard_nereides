@@ -1,6 +1,8 @@
 mod app;
 mod constant;
 mod csv_writer;
+#[cfg(target_os = "linux")]
+mod gps;
 mod mqtt;
 mod uart_communication;
 use app::App;
@@ -21,13 +23,18 @@ pub fn run() {
             Some(vec![]),
         ))
         .setup(|app| {
+            app.manage(App::new(app.handle().clone()));
+
             #[cfg(target_os = "linux")]
             {
-                app.manage(App::new(app.handle().clone()));
                 // Get the autostart manager
                 let autostart_manager = app.autolaunch();
                 // Enable autostart
                 let _ = autostart_manager.enable();
+                info!(
+                    "registered for autostart? {}",
+                    autostart_manager.is_enabled().unwrap()
+                );
                 // Check enable state}
             }
 
