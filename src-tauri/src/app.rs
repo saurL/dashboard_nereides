@@ -84,10 +84,10 @@ impl App {
         // S'assurer que le code avec socketcan est uniquement exécuté sur Linux
         #[cfg(target_os = "linux")]
         {
-            let uart_communication = Some(UartCommunication::new("/dev/serial0", 1000000, tx));
+            let uart_communication = Some(UartCommunication::new("/dev/serial0", 1000000, tx.clone()));
         }
         #[cfg(target_os = "linux")]
-        let gps = Gps::new();
+        let gps = Gps::new(tx.clone());
         let elapsed_time_data_sent = Instant::now();
         let instance: App = App {
             uart_communication,

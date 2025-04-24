@@ -1,32 +1,37 @@
 use linux_embedded_hal::i2cdev::core::I2CDevice;
 use linux_embedded_hal::I2cdev;
-use openssl::derive;
 use std::{thread, time::Duration};
 use std::str;
-use tauri::async_runtime::spawn;
+use tauri::async_runtime::{spawn, Sender};
+use log::{error, info};
+
+use crate::uart_communication::{UartData, UartDataNumber};
 
 #[derive(Clone)]
 pub struct Gps{
-
+    tx: Sender<UartData>,
 }
 
 impl Gps {
-    pub fn new() -> Self {
-        let instance = Gps {};
+    pub fn new(tx: Sender<UartData>) -> Self {
+        let instance = Gps {tx};
         instance.start_reading();
         instance
     }
 
     pub fn start_reading(&self){
+        let tx: Sender<UartData>= self.tx.clone();
+
         spawn(async move {
+            info!("GPS: Initialisation de la lecture des données GPS");
+            // Initialiser le périphérique I2C
             let mut i2c: I2cdev = I2cdev::new("/dev/i2c-1").expect("Failed to open I2C device");
 
             let mut buffer = String::new();
-           
             loop {
                 let mut data: [u8; 32] = [0u8; 32];
                 if let Err(e) = i2c.read(&mut data) {
-                    eprintln!("Erreur de lecture I2C: {:?}", e);
+                    error!("Erreur de lecture I2C: {:?}", e);
                     continue;
                 }
         
@@ -71,6 +76,7 @@ impl Gps {
         
                             latitude = Some(lat);
                             longitude = Some(lon);
+                            info!("Latitude: {:.6}°, Longitude: {:.6}°", lat, lon);
                         }
                     }
                 }
@@ -85,16 +91,32 @@ impl Gps {
                         if champs.len() > 7 && !champs[7].is_empty() {
                             if let Ok(speed_knots) = champs[7].parse::<f64>() {
                                 vitesse_kmh = Some(speed_knots * 1.852);
+                                info!("Vitesse: {:.2} km/h", vitesse_kmh.unwrap());
                             }
                         }
                     }
                 }
+                if let Some(lat) = latitude{
+                    let data: UartDataNumber = UartDataNumber{
+                        data_name: "gps_latitude".to_string(),
+                        value: lat,
+                    };
+                    tx.send(UartData::Number(data)).await.unwrap();
+                }
         
-                if let (Some(lat), Some(lon), Some(vit)) = (latitude, longitude, vitesse_kmh) {
-                    println!("Latitude  : {:.6}°", lat);
-                    println!("Longitude : {:.6}°", lon);
-                    println!("Vitesse   : {:.2} km/h", vit);
-                    println!("-----------------------------");
+               if let Some(lon) = longitude{
+                let data: UartDataNumber = UartDataNumber{
+                    data_name: "gps_longitude".to_string(),
+                    value: lon,
+                };
+                tx.send(UartData::Number(data)).await.unwrap();
+                }
+                if let Some(vitesse) = vitesse_kmh{
+                    let data: UartDataNumber = UartDataNumber{
+                        data_name: "gps_vitesse".to_string(),
+                        value: vitesse,
+                    };
+                    tx.send(UartData::Number(data)).await.unwrap();
                 }
         
                 thread::sleep(Duration::from_millis(200));
