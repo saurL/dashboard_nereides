@@ -32,6 +32,11 @@ impl Gps {
             info!("GPS: Initialisation de la lecture des données GPS");
             loop {
                 let mut data: [u8; 32] = [0u8; 32];
+                let reg = [0xFF];
+                if let  Err(e) =i2c.write(&reg){
+                    error!("Erreur d'écriture I2C: {:?}", e);
+                    continue;
+                }
                 if let Err(e) = i2c.read(&mut data) {
                     error!("Erreur de lecture I2C: {:?}", e);
                     continue;
