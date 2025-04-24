@@ -125,7 +125,7 @@ impl UartCommunication {
                             instance.calculate_percentage().await;
                             info!(
                                 "Good packet percentage: {:.2}%",
-                                instance.get_good_packet_percentage()
+                                instance.good_packets.lock().await
                             );
                             if instance.tx.send(json_value).await.is_err() {
                                 error!("Failed to send data to channel");
