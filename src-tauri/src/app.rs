@@ -12,13 +12,14 @@ use crate::csv_writer::Csv_writter;
 use indexmap::IndexMap;
 
 use crate::mqtt::MQTT;
-use crate::uart_communication::UartCommunication;
+use crate::uart_communication::{self, UartCommunication};
 use crate::gps::Gps;
 use rand::rngs::StdRng;
 use rand::{Rng, SeedableRng};
 use serde_json::Value;
 use tokio::sync::mpsc::{channel, Receiver};
 use crate::uart_communication::UartData;
+use std::time::Instant;
 #[derive(Clone)]
 pub struct App {
     #[cfg(target_os = "linux")]
@@ -33,6 +34,7 @@ pub struct App {
     data_api: IndexMap<&'static str, Option<f64>>,
     rx: Arc<Mutex<Receiver<UartData>>>,
     gps: Gps,
+    elapsed_time_data_sent: Instant,
 }
 
 impl App {
@@ -84,8 +86,8 @@ impl App {
             let uart_communication = Some(UartCommunication::new("/dev/serial0", 1000000, tx));
         }
         let gps = Gps::new();
-
-        let instance = App {
+        let elapsed_time_data_sent = Instant::now();
+        let instance: App = App {
             uart_communication,
             app_handle,
             datas: datas.to_vec(),
@@ -93,7 +95,8 @@ impl App {
             scv_writer,
             data_api,
             rx: Arc::new(Mutex::new(rx)),
-            gps
+            gps,
+            elapsed_time_data_sent,
         };
         instance.run();
         instance
@@ -104,13 +107,30 @@ impl App {
         self.app_handle.emit(data_name, value).unwrap();
         self.update_mesures(data_name, value);
         if self.all_mesures_complete() {
+          
+            let elapsed_time = self.elapsed_time_data_sent.elapsed().as_secs();
+            info!("Temps écoulé depuis le dernier envoit de donnée : {} secondes", elapsed_time);
+            
             let data: IndexMap<&str, Option<f64>> = self.data_api.clone();
-            let filtered_data: IndexMap<&str, f64> = data
+            let mut filtered_data: IndexMap<&str, f64> = data
                 .iter()
                 .filter_map(|(&key, value)| value.map(|v| (key, v)))
                 .collect();
+            self.mqtt.send_event(filtered_data.clone());
+             
+            if let Some(uart_comm) = &self.uart_communication {
+                let good_packets = uart_comm.get_good_packet_count();
+                let bad_packets = uart_comm.get_bad_packet_count();
+                let good_packet_percentage = uart_comm.get_good_packet_percentage();
+                filtered_data.insert("good_packets", good_packets as f64);
+                filtered_data.insert("bad_packets", bad_packets as f64);
+                filtered_data.insert("pourcentage_of_good_packet", good_packet_percentage);
+                
+
+            }
+            filtered_data.insert("elapsed_time", elapsed_time as f64);
             self.scv_writer.write_data(filtered_data.clone()).unwrap();
-            self.mqtt.send_event(filtered_data);
+
             for value in self.data_api.values_mut() {
                 *value = None;
             }

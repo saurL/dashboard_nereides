@@ -11,6 +11,9 @@ use tokio::sync::Mutex;
 pub struct UartCommunication {
     port: Arc<Mutex<Box<dyn SerialPort>>>,
     tx: Sender<UartData>,
+    good_packets: Arc<Mutex<u64>>,
+    bad_packets: Arc<Mutex<u64>>,
+    percentage: Arc<Mutex<f64>>,
 }
 #[derive(Deserialize, Serialize,Debug)]
 pub struct UartDataNumber {
@@ -40,21 +43,23 @@ impl UartCommunication {
         let instance = UartCommunication {
             port: Arc::new(port.into()),
             tx,
+            good_packets: Arc::new(Mutex::new(0)),
+            bad_packets: Arc::new(Mutex::new(0)),
+            percentage: Arc::new(Mutex::new(0.0)),
         };
         instance.start_reading();
         instance
     }
 
     pub fn start_reading(&self) -> JoinHandle<()> {
-        let port_clone = self.port.clone();
-        let tx: Sender<UartData> = self.tx.clone();
+        let instance = self.clone();
+        
         spawn(async move {
             let mut total_buffer = Vec::new();
             loop {
-                let mut port = port_clone.lock().await;
                 let mut buffer = vec![0u8; 1024];
 
-                match port.read(&mut buffer) {
+                match instance.port.lock().await.read(&mut buffer) {
                     Ok(bytes_read) if bytes_read > 0 => {
                         // Retirer tous les 0 du buffer
                         buffer= buffer[..bytes_read].into();
@@ -97,7 +102,8 @@ impl UartCommunication {
                                     // On cherche le prochain début de message
                                   
                                             total_buffer.clear();
-               
+                                    let mut bad_packed = instance.bad_packets.lock().await;
+                                    *bad_packed += 1;
                                     continue;
                                 }
                             };
@@ -115,7 +121,13 @@ impl UartCommunication {
                             };
 
                             info!("Received data: {:?}", json_value);
-                            if tx.send(json_value).await.is_err() {
+                            *instance.good_packets.lock().await += 1;
+                            instance.calculate_percentage().await;
+                            info!(
+                                "Good packet percentage: {:.2}%",
+                                instance.get_good_packet_percentage()
+                            );
+                            if instance.tx.send(json_value).await.is_err() {
                                 error!("Failed to send data to channel");
                             }
 
@@ -130,6 +142,34 @@ impl UartCommunication {
                 }
             }
         })
+    }
+
+    pub async fn calculate_percentage(&self) -> f64 {
+        let good_packets = *self.good_packets.lock().await;
+        let bad_packets = *self.bad_packets.lock().await;
+        let total_packets = good_packets + bad_packets;
+
+        if total_packets == 0 {
+            0.0
+        } else {
+            let percentage = (good_packets as f64 / total_packets as f64) * 100.0;
+            *self.percentage.lock().await = percentage;
+            percentage
+        }
+    }
+    pub fn get_good_packet_percentage(&self) -> f64 {
+        let percentage = self.percentage.blocking_lock();
+        *percentage
+    }
+
+    pub fn get_bad_packet_count(&self) -> u64 {
+        let bad_packets = self.bad_packets.blocking_lock();
+        *bad_packets
+    }
+
+    pub fn get_good_packet_count(&self) -> u64 {
+        let good_packets = self.good_packets.blocking_lock();
+        *good_packets
     }
 }
 

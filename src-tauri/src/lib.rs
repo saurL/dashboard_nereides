@@ -29,6 +29,7 @@ pub fn run() {
                 let autostart_manager = app.autolaunch();
                 // Enable autostart
                 let _ = autostart_manager.enable();
+                info!("registered for autostart? {}", autostart_manager.is_enabled().unwrap());
                 // Check enable state}
             }
 
