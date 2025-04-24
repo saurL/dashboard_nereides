@@ -34,15 +34,15 @@ impl Gps {
                     error!("Erreur de lecture I2C: {:?}", e);
                     continue;
                 }
-        
+                info!("GPS: Données lues: {:?}", data);
                 // Convertir les octets en texte ASCII lisible
                 let texte: String = data
                     .iter()
                     .filter_map(|&b| if (32..127).contains(&b) { Some(b as char) } else { None })
                     .collect();
-        
+                info!("GPS: Données converties: {:?}", texte);
                 buffer.push_str(&texte);
-        
+                info!("GPS: Buffer après ajout: {:?}", buffer);
                 // Traitement des trames GPS
                 let mut latitude: Option<f64> = None;
                 let mut longitude: Option<f64> = None;
