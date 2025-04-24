@@ -30,22 +30,22 @@ impl Gps {
             info!("GPS: Périphérique I2C ouvert avec succès");
             i2c.set_slave_address(0x42).expect("Failed to set slave address");
             let mut buffer = String::new();
+            loop{
             info!("GPS: Initialisation de la lecture des données GPS");
-            loop {
-                let mut data: [u8; 32] = [0u8; 32];
-                let reg = [0xFF];
-                if let  Err(e) =i2c.write(&reg){
-                    error!("Erreur d'écriture I2C: {:?}", e);
+                
+            let data =match i2c.smbus_read_block_data(0xFF) {
+                Ok(data) => {
+                    info!("GPS: lecture d'I2C réussie");
+                    data // Stocker le retour dans une variable
+                }
+                Err(e) => {
+                    error!("Erreur de lecture d'I2C: {:?}", e);
                     continue;
                 }
+            };
+                
               // Petite pause pour laisser le périphérique se préparer après l'écriture
-        sleep(Duration::from_millis(10)); // Délai de 10ms
 
-        // Lecture des données
-        if let Err(e) = i2c.read(&mut data) {
-            error!("Erreur de lecture I2C: {:?}", e);
-            continue;
-        }
 
                 info!("GPS: Données lues: {:?}", data);
                 // Convertir les octets en texte ASCII lisible
