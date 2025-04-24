@@ -1,5 +1,6 @@
 use linux_embedded_hal::i2cdev::core::I2CDevice;
 use linux_embedded_hal::I2cdev;
+use std::thread::sleep;
 use std::{thread, time::Duration};
 use std::str;
 use tauri::async_runtime::{spawn, Sender};
@@ -37,10 +38,15 @@ impl Gps {
                     error!("Erreur d'écriture I2C: {:?}", e);
                     continue;
                 }
-                if let Err(e) = i2c.read(&mut data) {
-                    error!("Erreur de lecture I2C: {:?}", e);
-                    continue;
-                }
+              // Petite pause pour laisser le périphérique se préparer après l'écriture
+        sleep(Duration::from_millis(10)); // Délai de 10ms
+
+        // Lecture des données
+        if let Err(e) = i2c.read(&mut data) {
+            error!("Erreur de lecture I2C: {:?}", e);
+            continue;
+        }
+
                 info!("GPS: Données lues: {:?}", data);
                 // Convertir les octets en texte ASCII lisible
                 let texte: String = data
