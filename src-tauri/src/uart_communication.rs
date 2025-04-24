@@ -123,10 +123,7 @@ impl UartCommunication {
                             info!("Received data: {:?}", json_value);
                             *instance.good_packets.lock().await += 1;
                             instance.calculate_percentage().await;
-                            info!(
-                                "Good packet percentage: {:.2}%",
-                                instance.good_packets.lock().await
-                            );
+                   
                             if instance.tx.send(json_value).await.is_err() {
                                 error!("Failed to send data to channel");
                             }
@@ -148,12 +145,16 @@ impl UartCommunication {
         let good_packets = *self.good_packets.lock().await;
         let bad_packets = *self.bad_packets.lock().await;
         let total_packets = good_packets + bad_packets;
-
+        info!("Total packets: {}", total_packets);
+        info!("Good packets: {}", good_packets);
+        info!("Bad packets: {}", bad_packets);
         if total_packets == 0 {
             0.0
         } else {
             let percentage = (good_packets as f64 / total_packets as f64) * 100.0;
             *self.percentage.lock().await = percentage;
+            info!("Good packet percentage: {:.2}%", percentage);
+
             percentage
         }
     }
