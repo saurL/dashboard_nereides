@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Ref, ref,onMounted } from "vue";
+import { Ref, ref, onMounted } from "vue";
 import coloredData from "./component/coloredData.vue";
 import { listen } from "@tauri-apps/api/event";
 import ColoredData from "./component/coloredData.vue";
@@ -58,9 +58,7 @@ datas.forEach((data) => {
     }
   });
 });
-onMounted(async () => {
-})
-
+onMounted(async () => {});
 </script>
 
 <template>
@@ -69,60 +67,65 @@ onMounted(async () => {
       <!-- Batterie -->
 
       <div class="data">
-        <img
-          class="icon"
-          src="./assets/icons8-nombreuses-batteries-90.png"
-          alt=""
-        />
-
+        <p>BATTERIE</p>
+        <coloredData :data_name="'battery_soc'" :symbol="'%'"></coloredData>
+        <coloredData :data_name="'battery_temp'" :symbol="'°C'"></coloredData>
+        <coloredData :data_name="'battery_soc_SE'" :symbol="'%'"></coloredData>
         <coloredData
-          :data_name="'battery_voltage_v'"
-          :symbol="'V'"
-        ></coloredData>
-        <coloredData
-          :data_name="'battery_current_a'"
-          :symbol="'A'"
+          :data_name="'battery_temp_SE'"
+          :symbol="'°C'"
         ></coloredData>
       </div>
 
       <!-- Moteur -->
 
       <div class="data">
-        <img class="icon" src="./assets/icons8-moteur-90.png" alt="" />
+        <p>MOTEUR</p>
 
-        <coloredData :data_name="'motor_voltage_v'" :symbol="'V'"></coloredData>
-        <coloredData :data_name="'motor_current_a'" :symbol="'A'"></coloredData>
+        <coloredData :data_name="'motor_pow'" :symbol="'W'"></coloredData>
+        <coloredData :data_name="'motor_rpm'" :symbol="'RPM'"></coloredData>
+        <coloredData :data_name="'motor_throttle'" :symbol="'%'"></coloredData>
         <coloredData :data_name="'motor_temp'" :symbol="'°C'"></coloredData>
       </div>
 
       <!-- PAC -->
 
       <div class="data">
-        <img class="icon" src="./assets/icons8-hydrogène-100.png" alt="" />
-        <coloredData :data_name="'pac_voltage_v'" :symbol="'V'"></coloredData>
-        <coloredData :data_name="'pac_current_a'" :symbol="'V'"></coloredData>
+        <p>PAC</p>
+        <coloredData :data_name="'qtt_H2rest'" :symbol="'L'"></coloredData>
         <coloredData
-          :data_name="'pac_temperature_c'"
+          :data_name="'pac_hydrogen_consumption_mgs'"
+          :symbol="'V'"
+        ></coloredData>
+        <coloredData
+          :data_name="'pac_temperature'"
           :symbol="'°C'"
         ></coloredData>
+        <coloredData :data_name="'pac_produced_energy'"></coloredData>
       </div>
     </div>
 
     <!-- GPS -->
+    <div class="data">
+      <coloredData
+        :data_name="'gps_vitesse'"
+        :symbol="'km/h - noeuds '"
+      ></coloredData>
+      <coloredData :data_name="'pac_produced_energy'"></coloredData>
+      <coloredData :data_name="'Heure'" :symbol="'HEURE'"></coloredData>
+    </div>
   </div>
 </template>
 
 <style>
-
-
 .box {
-  
 }
 
 .data {
 }
 
-.top-container {/*
+.top-container {
+  /*
   display: flex;
   flex: wrap; */
   align-content: center;
