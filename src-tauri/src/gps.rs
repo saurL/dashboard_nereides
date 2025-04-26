@@ -70,9 +70,11 @@ impl Gps {
                     let message = buffer[..=end].to_string();
                     buffer.replace_range(..=end, "");
 
-                    if message.find("GNGGA") {
+                    if let Some(start) = message.find("GNGGA") {
+                        let message = &message[start..];
                         process_gngga_message(&message, &mut latitude, &mut longitude);
-                    } else if message.find("GNRMC") {
+                    } else if let Some(start) = message.find("GNRMC") {
+                        let message = &message[start..];
                         process_gnrmc_message(&message, &mut vitesse_kmh);
                     } else {
                         info!("Message ignoré: {:?}", message);
