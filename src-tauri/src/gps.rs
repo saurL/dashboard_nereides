@@ -68,7 +68,7 @@ impl Gps {
 
                 // GNGGA: position
                 if let Some(start) = buffer.find("$GNGGA") {
-                    if let Some(end) = buffer[start..].find('\n') {
+                    if let Some(end) = buffer[start..].find('*') {
                         let line = buffer[start..start + end].to_string();
                         buffer.replace_range(start..start + end + 1, "");
                         let champs: Vec<&str> = line.split(',').map(str::trim).collect();
@@ -101,7 +101,7 @@ impl Gps {
 
                 // GNRMC: vitesse
                 if let Some(start) = buffer.find("$GNRMC") {
-                    if let Some(end) = buffer[start..].find('\n') {
+                    if let Some(end) = buffer[start..].find('*') {
                         let line = buffer[start..start + end].to_string();
                         buffer.replace_range(start..start + end + 1, "");
                         let champs: Vec<&str> = line.split(',').map(str::trim).collect();
