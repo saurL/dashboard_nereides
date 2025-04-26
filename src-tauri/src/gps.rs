@@ -69,16 +69,16 @@ impl Gps {
                 while let Some(end) = buffer.find('*') {
                     let message = buffer[..=end].to_string();
                     buffer.replace_range(..=end, "");
-            
-                    if message.starts_with("$GNGGA") {
+
+                    if message.find("GNGGA") {
                         process_gngga_message(&message, &mut latitude, &mut longitude);
-                    } else if message.starts_with("$GNRMC") {
+                    } else if message.find("GNRMC") {
                         process_gnrmc_message(&message, &mut vitesse_kmh);
                     } else {
                         info!("Message ignoré: {:?}", message);
                     }
                 }
-            
+
                 if let Some(lat) = latitude {
                     let data: UartDataNumber = UartDataNumber {
                         data_name: "gps_latitude".to_string(),
@@ -86,7 +86,7 @@ impl Gps {
                     };
                     tx.send(UartData::Number(data)).await.unwrap();
                 }
-            
+
                 if let Some(lon) = longitude {
                     let data: UartDataNumber = UartDataNumber {
                         data_name: "gps_longitude".to_string(),
