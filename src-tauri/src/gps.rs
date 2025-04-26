@@ -32,11 +32,11 @@ impl Gps {
             let mut buffer = String::new();
             loop{
             info!("GPS: Initialisation de la lecture des données GPS");
-                
-            let data =match i2c.smbus_read_block_data(0xFF) {
-                Ok(data) => {
+            let mut data_buffer = [0u8; 32]; // Buffer pour la lecture
+            match i2c.read(&mut data_buffer) {
+                Ok(_) => {
                     info!("GPS: lecture d'I2C réussie");
-                    data // Stocker le retour dans une variable
+                    
                 }
                 Err(e) => {
                     error!("Erreur de lecture d'I2C: {:?}", e);
@@ -47,9 +47,9 @@ impl Gps {
               // Petite pause pour laisser le périphérique se préparer après l'écriture
 
 
-                info!("GPS: Données lues: {:?}", data);
+                info!("GPS: Données lues: {:?}", data_buffer);
                 // Convertir les octets en texte ASCII lisible
-                let texte: String = data
+                let texte: String = data_buffer
                     .iter()
                     .filter_map(|&b| if (32..127).contains(&b) { Some(b as char) } else { None })
                     .collect();
