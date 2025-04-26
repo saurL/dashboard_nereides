@@ -66,54 +66,19 @@ impl Gps {
                 let mut longitude: Option<f64> = None;
                 let mut vitesse_kmh: Option<f64> = None;
 
-                // GNGGA: position
-                if let Some(start) = buffer.find("$GNGGA") {
-                    if let Some(end) = buffer[start..].find('*') {
-                        let line = buffer[start..start + end].to_string();
-                        buffer.replace_range(start..start + end + 1, "");
-                        let champs: Vec<&str> = line.split(',').map(str::trim).collect();
-
-                        if champs.len() > 5 && !champs[2].is_empty() && !champs[4].is_empty() {
-                            let raw_lat = champs[2];
-                            let lat_dir = champs[3];
-                            let deg_lat = raw_lat[..2].parse::<f64>().unwrap_or(0.0);
-                            let min_lat = raw_lat[2..].parse::<f64>().unwrap_or(0.0);
-                            let mut lat = deg_lat + (min_lat / 60.0);
-                            if lat_dir == "S" {
-                                lat *= -1.0;
-                            }
-
-                            let raw_lon = champs[4];
-                            let lon_dir = champs[5];
-                            let deg_lon = raw_lon[..3].parse::<f64>().unwrap_or(0.0);
-                            let min_lon = raw_lon[3..].parse::<f64>().unwrap_or(0.0);
-                            let mut lon = deg_lon + (min_lon / 60.0);
-                            if lon_dir == "W" {
-                                lon *= -1.0;
-                            }
-
-                            latitude = Some(lat);
-                            longitude = Some(lon);
-                            info!("Latitude: {:.6}°, Longitude: {:.6}°", lat, lon);
-                        }
+                while let Some(end) = buffer.find('*') {
+                    let message = buffer[..=end].to_string();
+                    buffer.replace_range(..=end, "");
+            
+                    if message.starts_with("$GNGGA") {
+                        process_gngga_message(&message, &mut latitude, &mut longitude);
+                    } else if message.starts_with("$GNRMC") {
+                        process_gnrmc_message(&message, &mut vitesse_kmh);
+                    } else {
+                        info!("Message ignoré: {:?}", message);
                     }
                 }
-
-                // GNRMC: vitesse
-                if let Some(start) = buffer.find("$GNRMC") {
-                    if let Some(end) = buffer[start..].find('*') {
-                        let line = buffer[start..start + end].to_string();
-                        buffer.replace_range(start..start + end + 1, "");
-                        let champs: Vec<&str> = line.split(',').map(str::trim).collect();
-
-                        if champs.len() > 7 && !champs[7].is_empty() {
-                            if let Ok(speed_knots) = champs[7].parse::<f64>() {
-                                vitesse_kmh = Some(speed_knots * 1.852);
-                                info!("Vitesse: {:.2} km/h", vitesse_kmh.unwrap());
-                            }
-                        }
-                    }
-                }
+            
                 if let Some(lat) = latitude {
                     let data: UartDataNumber = UartDataNumber {
                         data_name: "gps_latitude".to_string(),
@@ -121,7 +86,7 @@ impl Gps {
                     };
                     tx.send(UartData::Number(data)).await.unwrap();
                 }
-
+            
                 if let Some(lon) = longitude {
                     let data: UartDataNumber = UartDataNumber {
                         data_name: "gps_longitude".to_string(),
@@ -140,5 +105,41 @@ impl Gps {
                 thread::sleep(Duration::from_millis(20));
             }
         });
+    }
+}
+fn process_gngga_message(message: &str, latitude: &mut Option<f64>, longitude: &mut Option<f64>) {
+    let champs: Vec<&str> = message.split(',').map(str::trim).collect();
+    if champs.len() > 5 && !champs[2].is_empty() && !champs[4].is_empty() {
+        let raw_lat = champs[2];
+        let lat_dir = champs[3];
+        let deg_lat = raw_lat[..2].parse::<f64>().unwrap_or(0.0);
+        let min_lat = raw_lat[2..].parse::<f64>().unwrap_or(0.0);
+        let mut lat = deg_lat + (min_lat / 60.0);
+        if lat_dir == "S" {
+            lat *= -1.0;
+        }
+
+        let raw_lon = champs[4];
+        let lon_dir = champs[5];
+        let deg_lon = raw_lon[..3].parse::<f64>().unwrap_or(0.0);
+        let min_lon = raw_lon[3..].parse::<f64>().unwrap_or(0.0);
+        let mut lon = deg_lon + (min_lon / 60.0);
+        if lon_dir == "W" {
+            lon *= -1.0;
+        }
+
+        *latitude = Some(lat);
+        *longitude = Some(lon);
+        info!("Latitude: {:.6}°, Longitude: {:.6}°", lat, lon);
+    }
+}
+
+fn process_gnrmc_message(message: &str, vitesse_kmh: &mut Option<f64>) {
+    let champs: Vec<&str> = message.split(',').map(str::trim).collect();
+    if champs.len() > 7 && !champs[7].is_empty() {
+        if let Ok(speed_knots) = champs[7].parse::<f64>() {
+            *vitesse_kmh = Some(speed_knots * 1.852);
+            info!("Vitesse: {:.2} km/h", vitesse_kmh.unwrap());
+        }
     }
 }
