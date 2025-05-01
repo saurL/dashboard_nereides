@@ -1,21 +1,26 @@
 <template>
-  <p class="coloredData" :style="{ color: computedColor }">
-    {{ roundToTwo(displayed_data) }} {{ symbol }}
-  </p>
+  <div class="column data_block">
+    <p v-if="label">{{ label }}</p>
+    <p class="coloredData" :style="{ color: computedColor }">
+      {{ roundToTwo(displayed_data) }} {{ symbol }}
+    </p>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { listen } from "@tauri-apps/api/event";
-import {
-info
-} from '@tauri-apps/plugin-log';
+import { info } from "@tauri-apps/plugin-log";
 const props = defineProps({
   data_name: {
     type: String,
     required: true,
   },
   symbol: {
+    type: String,
+    default: undefined,
+  },
+  label: {
     type: String,
     default: undefined,
   },
@@ -63,8 +68,31 @@ const computedColor = computed(() => {
 });
 </script>
 <style scoped>
+p {
+  margin: 0;
+  padding: 0;
+}
 .coloredData {
   text-align: right;
   min-width: 68px;
+}
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.data_block {
+  padding-left: 2px;
+  padding-right: 2px;
 }
 </style>

@@ -183,7 +183,7 @@ impl App {
                     let value: f64 = rng.gen_range(0.0..100.0);
                     instance.treat_data(data_name, value);
                 }
-                sleep(Duration::from_millis(1000)).await;
+                sleep(Duration::from_millis(3000)).await;
             }
         });
     }
