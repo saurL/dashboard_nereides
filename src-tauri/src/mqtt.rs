@@ -11,7 +11,7 @@ pub struct MQTT {
 
 impl MQTT {
     pub fn new() -> Arc<MQTT> {
-        let broker = "test.mosquitto.org";
+        let broker = "broker.hivemq.com";
         let port = 1883;
 
         let topic = "testTopic".to_string();
@@ -31,21 +31,22 @@ impl MQTT {
     pub fn connect(self: &Arc<Self>) {
         let instance = self.clone();
         spawn(async move {
-            let username = "nereides";
-            let password = "raspberry";
-            let conn_opts = ConnectOptionsBuilder::new()
-                .keep_alive_interval(Duration::from_secs(20))
-                .automatic_reconnect(Duration::from_secs(1), Duration::from_secs(60))
-                .clean_session(true)
-                //.password(password)
-                // .user_name(username)
-                .finalize();
-            info!("Connecting to the MQTT broker");
-            if let Err(e) = instance.client.connect(conn_opts).await {
-                error!("Error connecting: {:?}", e);
-                return;
+            loop {
+                let conn_opts = ConnectOptionsBuilder::new()
+                    .keep_alive_interval(Duration::from_secs(5))
+                    .automatic_reconnect(Duration::from_secs(1), Duration::from_secs(60))
+                    .clean_session(true)
+                    //.password(password)
+                    // .user_name(username)
+                    .finalize();
+                info!("Connecting to the MQTT broker");
+                if let Err(e) = instance.client.connect(conn_opts).await {
+                    error!("Error connecting to MQTT broker: {:?}", e);
+                } else {
+                    info!("Connected to the MQTT broker");
+                    break;
+                }
             }
-            info!("Connected to the MQTT broker");
         });
     }
 
