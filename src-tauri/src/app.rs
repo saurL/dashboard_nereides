@@ -84,7 +84,12 @@ impl App {
         // S'assurer que le code avec socketcan est uniquement exécuté sur Linux
         #[cfg(target_os = "linux")]
         {
+<<<<<<< Updated upstream
             let uart_communication = Some(UartCommunication::new("/dev/serial0", 1000000, tx));
+=======
+            let uart_communication =
+                Some(UartCommunication::new("/dev/serial0", 1000000, tx.clone()));
+>>>>>>> Stashed changes
         }
         #[cfg(target_os = "linux")]
         let gps = Gps::new();
@@ -118,7 +123,7 @@ impl App {
                 "Temps écoulé depuis le dernier envoit de donnée : {} secondes",
                 elapsed_time
             );
-
+            self.elapsed_time_data_sent = Instant::now();
             let data: IndexMap<&str, Option<f64>> = self.data_api.clone();
             let mut filtered_data: IndexMap<&str, f64> = data
                 .iter()
