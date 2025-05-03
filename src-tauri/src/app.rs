@@ -84,16 +84,7 @@ impl App {
         // S'assurer que le code avec socketcan est uniquement exécuté sur Linux
         #[cfg(target_os = "linux")]
         {
-<<<<<<< HEAD
-            let uart_communication = Some(UartCommunication::new("/dev/serial0", 1000000, tx.clone()));
-=======
-<<<<<<< Updated upstream
             let uart_communication = Some(UartCommunication::new("/dev/serial0", 1000000, tx));
-=======
-            let uart_communication =
-                Some(UartCommunication::new("/dev/serial0", 1000000, tx.clone()));
->>>>>>> Stashed changes
->>>>>>> main
         }
         #[cfg(target_os = "linux")]
         let gps = Gps::new(tx.clone());
