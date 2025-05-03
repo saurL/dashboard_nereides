@@ -36,9 +36,11 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+      - name: Install pnpm
+        run: npm install -g pnpm
 
       - name: install frontend dependencies
-        run: npm install
+        run: pnpm install
 
       - uses: tauri-apps/tauri-action@v0
         env:
