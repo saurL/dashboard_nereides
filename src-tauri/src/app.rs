@@ -84,7 +84,8 @@ impl App {
         // S'assurer que le code avec socketcan est uniquement exécuté sur Linux
         #[cfg(target_os = "linux")]
         {
-            let uart_communication = Some(UartCommunication::new("/dev/serial0", 1000000, tx.clone()));
+            let uart_communication =
+                Some(UartCommunication::new("/dev/serial0", 1000000, tx.clone()));
         }
         #[cfg(target_os = "linux")]
         let gps = Gps::new(tx.clone());
@@ -182,7 +183,7 @@ impl App {
                     let value: f64 = rng.gen_range(0.0..100.0);
                     instance.treat_data(data_name, value);
                 }
-                sleep(Duration::from_millis(1000)).await;
+                sleep(Duration::from_millis(3000)).await;
             }
         });
     }
