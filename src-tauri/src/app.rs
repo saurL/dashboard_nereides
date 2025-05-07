@@ -1,9 +1,8 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-use log::info;
+use log::{info,error};
 
-use serde::de;
 use tauri::{async_runtime::spawn, AppHandle, Emitter};
 use tokio::sync::Mutex;
 use tokio::time::sleep;
@@ -17,7 +16,6 @@ use crate::uart_communication::{self, UartCommunication};
 use indexmap::IndexMap;
 use rand::rngs::StdRng;
 use rand::{Rng, SeedableRng};
-use serde_json::Value;
 use std::time::Instant;
 use tokio::sync::mpsc::{channel, Receiver};
 #[derive(Clone)]
@@ -113,6 +111,18 @@ impl App {
         );
         self.app_handle.emit(data_name, value).unwrap();
         self.update_mesures(data_name, value);
+        let data: IndexMap<&str, Option<f64>> = self.data_api.clone();
+        let mut filtered_data: IndexMap<&str, f64> = data
+        .iter()
+        .filter_map(|(&key, value)| value.map(|v| (key, v)))
+        .collect();
+        match self.scv_writer.write_data(filtered_data.clone()){
+            Ok(_) => {
+                info!("Données écrites avec succès dans le fichier CSV");
+            }
+            Err(e) => {
+                error!("Erreur lors de l'écriture des données : {}", e);
+            }};
         if self.all_mesures_complete() {
             let elapsed_time = self.elapsed_time_data_sent.elapsed().as_secs();
             info!(
@@ -126,6 +136,7 @@ impl App {
                 .filter_map(|(&key, value)| value.map(|v| (key, v)))
                 .collect();
             self.mqtt.send_event(filtered_data.clone());
+            
             #[cfg(target_os = "linux")]
             {
                 if let Some(uart_comm) = &self.uart_communication {
@@ -138,7 +149,14 @@ impl App {
                 }
             }
             filtered_data.insert("elapsed_time", elapsed_time as f64);
-            self.scv_writer.write_data(filtered_data.clone()).unwrap();
+            match self.scv_writer.write_data(filtered_data.clone()){
+                Ok(_) => {
+                    info!("Données écrites avec succès dans le fichier CSV");
+                }
+                Err(e) => {
+                    error!("Erreur lors de l'écriture des données : {}", e);
+                }
+            };
 
             for value in self.data_api.values_mut() {
                 *value = None;
