@@ -18,7 +18,7 @@ impl MQTT {
         let uri: String = format!("tcp://{}:{}", broker, port);
         let create_opts = CreateOptionsBuilder::new()
             .server_uri(uri)
-            .client_id("rust_client")
+            .client_id("rust_client2")
             .finalize();
 
         let client = AsyncClient::new(create_opts).unwrap();
