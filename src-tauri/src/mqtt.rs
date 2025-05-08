@@ -61,17 +61,13 @@ impl MQTT {
             for (data_name, value) in data {
                 let full_topic = format!("nereides/{}", data_name);
                 let bytes: Vec<u8> = value.to_le_bytes().to_vec();
-                let message = Message::new(full_topic.clone(), bytes.clone(), QoS::AtLeastOnce);
-                if let Err(e) = instance.client.publish(message).await {
-                    error!("Failed to publish message: {}", e);
-                    return;
-                }
+                instance.send(data_name.to_string(), bytes);
                 info!("Published message: {} to topic: {}", value, full_topic);
             }
         });
     }
 
-    pub fn send(self: &Arc<Self>, data_name: String, value: f64) {
+    pub fn send(self: &Arc<Self>, data_name: String, bytes: Vec<u8>) {
         let instance = self.clone();
         spawn(async move {
             if !instance.client.is_connected() {
@@ -79,13 +75,12 @@ impl MQTT {
                 return;
             }
             let full_topic = format!("nereides/{}", data_name);
-            let bytes: Vec<u8> = value.to_le_bytes().to_vec();
+        
             let message = Message::new(full_topic.clone(), bytes.clone(), QoS::AtLeastOnce);
             if let Err(e) = instance.client.publish(message).await {
                 error!("Failed to publish message: {}", e);
                 return;
             }
-            info!("Published message: {} to topic: {}", value, full_topic);
         });
     }
 }

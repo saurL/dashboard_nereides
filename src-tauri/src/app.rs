@@ -112,7 +112,8 @@ impl App {
         );
         self.app_handle.emit(data_name, value).unwrap();
         self.update_mesures(data_name, value);
-        self.mqtt.send(data_name.into(), value);
+        let bytes: Vec<u8> = value.to_le_bytes().to_vec();
+        self.mqtt.send(data_name.into(), bytes);
 
         if self.all_mesures_complete() {
             let elapsed_time = self.elapsed_time_data_sent.elapsed().as_secs();
@@ -126,9 +127,9 @@ impl App {
                 .iter()
                 .filter_map(|(&key, value)| value.map(|v| (key, v)))
                 .collect();
-
+            /*
             self.mqtt.send_event(filtered_data.clone());
-
+            */
             #[cfg(target_os = "linux")]
             {
                 if let Some(uart_comm) = &self.uart_communication {
@@ -227,7 +228,7 @@ impl App {
                                 if !ipv4.is_loopback() {
                                     info!("Interface : {}", iface.name);
                                     info!("Adresse : {}", iface.ip());
-                                    instance2.mqtt.send("ipv4".into(), ipv4.to_bits().into());
+                                    instance2.mqtt.send("ipv4".into(), ipv4.to_bits().to_le_bytes().to_vec());
                                     info!("Adresse IPv4 locale : {}", ipv4);
                                 }
                             }
