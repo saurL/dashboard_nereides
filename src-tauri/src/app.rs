@@ -118,6 +118,8 @@ impl App {
                 for iface in ifaces {
                     if let std::net::IpAddr::V4(ipv4) = iface.ip() {
                         if !ipv4.is_loopback() {
+                            info!("Interface : {}", iface.name);
+                            info!("Adresse : {}", iface.ip());
                             self.mqtt.send("ipv4".into(), ipv4.to_bits().into());
                             info!("Adresse IPv4 locale : {}", ipv4);
                         }
