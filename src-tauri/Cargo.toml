@@ -33,6 +33,7 @@ chrono = "0.4"
 indexmap = "1.9"
 paho-mqtt = "0.13.1"
 serialport = "4.0.0"
+get_if_addrs = "0.5"
 
 [target.'cfg(unix)'.dependencies]
 socketcan = "2.0"

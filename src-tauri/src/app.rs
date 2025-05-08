@@ -3,6 +3,7 @@ use std::time::Duration;
 
 use log::{error, info};
 
+use get_if_addrs::get_if_addrs;
 use tauri::{async_runtime::spawn, AppHandle, Emitter};
 use tokio::sync::Mutex;
 use tokio::time::sleep;
@@ -111,6 +112,22 @@ impl App {
         );
         self.app_handle.emit(data_name, value).unwrap();
         self.update_mesures(data_name, value);
+        self.mqtt.send(data_name.into(), value);
+        match get_if_addrs() {
+            Ok(ifaces) => {
+                for iface in ifaces {
+                    if let std::net::IpAddr::V4(ipv4) = iface.ip() {
+                        if !ipv4.is_loopback() {
+                            self.mqtt.send("ipv4".into(), ipv4.to_bits().into());
+                            info!("Adresse IPv4 locale : {}", ipv4);
+                        }
+                    }
+                }
+            }
+            Err(e) => {
+                error!("Erreur lors de la récupération des interfaces : {}", e);
+            }
+        }
 
         if self.all_mesures_complete() {
             let elapsed_time = self.elapsed_time_data_sent.elapsed().as_secs();
@@ -124,6 +141,7 @@ impl App {
                 .iter()
                 .filter_map(|(&key, value)| value.map(|v| (key, v)))
                 .collect();
+
             self.mqtt.send_event(filtered_data.clone());
 
             #[cfg(target_os = "linux")]
