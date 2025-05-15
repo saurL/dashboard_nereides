@@ -3,14 +3,14 @@
 ## Description
 
 Néréides Dashboard est une application de tableau de bord développée avec **Tauri** pour le backend et **Vue.js** pour le frontend.  
-Elle permet de recevoir et d'afficher des données en temps réel grâce à un système d'événements performant.  
+Elle permet de recevoir et d'afficher des données en temps réel grâce à un système d'événements performant.
 
 ---
 
 ## Structure du Projet
 
-- **`src-tauri/`** : Contient tout le code backend écrit en Rust. Cette partie gère la réception des données via une connexion TCP sur `localhost:8080`.  
-- **`src/`** : Contient tout le code frontend en Vue.js et TypeScript pour l'interface utilisateur.  
+- **`src-tauri/`** : Contient tout le code backend écrit en Rust. Cette partie gère la réception des données via une connexion TCP sur `localhost:8080`.
+- **`src/`** : Contient tout le code frontend en Vue.js et TypeScript pour l'interface utilisateur.
 
 ---
 
@@ -18,11 +18,11 @@ Elle permet de recevoir et d'afficher des données en temps réel grâce à un s
 
 ### Réception des Données
 
-Pour récupérer les données, l'application écoute les connexions TCP sur l'adresse `localhost:8080`.  
+Pour récupérer les données, l'application écoute les connexions TCP sur l'adresse `localhost:8080`.
 
-1. **Structure du paquet :**  
-   - Avant de recevoir le contenu des données, le backend lit un **VarInt** indiquant la taille du paquet.  
-   - Une fois la taille obtenue, le contenu du paquet est traité sous la forme d'un objet JSON suivant ce format :  
+1. **Structure du paquet :**
+   - Avant de recevoir le contenu des données, le backend lit un **VarInt** indiquant la taille du paquet.
+   - Une fois la taille obtenue, le contenu du paquet est traité sous la forme d'un objet JSON suivant ce format :
      ```json
      {
        "data": "nom de la donnée",
@@ -30,15 +30,16 @@ Pour récupérer les données, l'application écoute les connexions TCP sur l'ad
      }
      ```
 
-
 ### Affichage des Données
+
 La gestion des données reçues repose sur un système d'événements entre le backend et le frontend.
 
 1. **Gestion des événements par Tauri :**
-Les données sont transmises sous forme d'événements depuis le backend.
+   Les données sont transmises sous forme d'événements depuis le backend.
 
 2. **Écoute des événements en TypeScript :**
-Le frontend écoute les événements via le module @tauri-apps/api/event :
+   Le frontend écoute les événements via le module @tauri-apps/api/event :
+
 ```typescript
 import { listen } from "@tauri-apps/api/event";
 
@@ -49,6 +50,7 @@ listen("data_name", (event) => {
 ```
 
 ### Installation et Lancement
+
 1. **Clonez le dépôt :**
 
 ```bash
@@ -57,14 +59,16 @@ cd nereides-dashboard
 ```
 
 2. **Instalez les dépendances**
-installez rust.
-installer node et npm
-`npm install`
+   installez rust.
+   installer node et npm
+   `pnpm install`
 
-4. ** Lancez le projet en mode développement :**
+3. ** Lancez le projet en mode développement :**
+
 ```
-npm run dev
+pnpm run tauri dev
 ```
+
 ## Déploiement et Mise à Jour sur le Raspberry Pi
 
 ### 1. **Compilation automatique sur GitHub Actions**
@@ -73,7 +77,7 @@ Lorsque des modifications sont poussées sur la branche `release`, une action Gi
 
 ### 2. **Récupération des fichiers `.deb` ARM64**
 
-Une fois l'action GitHub terminée avec succès, le fichier `.deb` pour architecture ARM64 sera généré et disponible dans l'onglet realse. 
+Une fois l'action GitHub terminée avec succès, le fichier `.deb` pour architecture ARM64 sera généré et disponible dans l'onglet realse.
 
 Pour vérifier que l'action a bien été exécutée et que le fichier a bien été mis à jour, vous pouvez consulter . Vous y trouverez un lien pour télécharger le fichier `.deb`.
 
@@ -87,21 +91,23 @@ Lorsque le fichier `.deb` est prêt, vous devez le transférer vers votre Raspbe
    ```bash
    scp chemin/vers/le/fichier_arm64.deb nereides@adresse_ip_du_pi:/home/nereides/Desktop
    ```
+
    ```
    scp dashboard_0.1.0_arm64.deb nereides@192.168.82.208:/home/nereides/Desktop
    ```
-Remplacez `chemin/vers/le/fichier_arm64.deb` par le chemin du fichier téléchargé et `adresse_ip_du_pi` par l'adresse IP de votre Raspberry Pi. /!\ Vous devrez certainement être connecté au même wifi
+
+   Remplacez `chemin/vers/le/fichier_arm64.deb` par le chemin du fichier téléchargé et `adresse_ip_du_pi` par l'adresse IP de votre Raspberry Pi. /!\ Vous devrez certainement être connecté au même wifi
 
 Si on vous demande un mot de passe c'est `raspberry`.
+
 ### 4. Installation du fichier `.deb` sur le Raspberry Pi
+
 Une fois le fichier transféré, connectez-vous à votre Raspberry Pi et installez le paquet `.deb` :
-   ```bash
+
+```bash
 sudo dpkg -i /home/pi/fichier_arm64.deb
-   ```
+```
+
 ### 5. Mise à jour
+
 À chaque nouveau push sur la branche `release`, le processus ci-dessus sera réexécuté automatiquement, ce qui vous permettra de toujours déployer la version la plus récente de votre programme sur le Raspberry Pi. Il suffit de répéter l'étape 3 (transfert via `scp`) et 4 (installation via `dpkg`).
-
-
-
-
-
