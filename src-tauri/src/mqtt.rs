@@ -71,11 +71,11 @@ impl MQTT {
         let instance = self.clone();
         spawn(async move {
             if !instance.client.is_connected() {
-                info!("MQTT client is not connected, cannot send event.");
+                error!("MQTT client is not connected, cannot send event.");
                 return;
             }
             let full_topic = format!("nereides/{}", data_name);
-        
+
             let message = Message::new(full_topic.clone(), bytes.clone(), QoS::AtLeastOnce);
             if let Err(e) = instance.client.publish(message).await {
                 error!("Failed to publish message: {}", e);

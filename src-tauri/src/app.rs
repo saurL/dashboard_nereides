@@ -114,7 +114,12 @@ impl App {
         );
         self.app_handle.emit(data_name, value).unwrap();
         self.update_mesures(data_name, value);
+        // ici on encode en litle endian
         let bytes: Vec<u8> = value.to_le_bytes().to_vec();
+
+        // si il faut tester en big endian
+        // let bytes: Vec<u8> = value.to_be_bytes().to_vec();
+
         self.mqtt.send(data_name.into(), bytes);
 
         if self.all_mesures_complete() {
