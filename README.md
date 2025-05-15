@@ -60,7 +60,7 @@ cd nereides-dashboard
 
 2. **Instalez les dépendances**
    installez rust.
-   installer node et npm
+   installer node et pnpm
    `pnpm install`
 
 3. ** Lancez le projet en mode développement :**
