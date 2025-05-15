@@ -62,133 +62,129 @@ onMounted(async () => {});
 </script>
 
 <template>
-  <div class="box">
-    <div class="top-container">
-      <!-- Batterie -->
+  <!-- Batterie -->
+  <div class="row">
+    <div class="data coll">
+      <p>BATTERIE</p>
       <div class="row">
-        <div class="data">
-          <p>BATTERIE</p>
-          <div class="row">
-            <p>Energie</p>
-            <coloredData
-              :label="'Charge'"
-              :data_name="'battery_soc'"
-              :symbol="'%'"
-            ></coloredData>
-            <coloredData
-              :label="'Température'"
-              :data_name="'battery_temp'"
-              :symbol="'°C'"
-            ></coloredData>
-            <coloredData
-              :label="'Intensité'"
-              :data_name="'battery_current_a'"
-              :symbol="'A'"
-            ></coloredData>
-          </div>
-          <div class="row">
-            <p>SE</p>
-            <coloredData
-              :data_name="'battery_soc_SE'"
-              :symbol="'%'"
-            ></coloredData>
-            <coloredData
-              :data_name="'battery_temp_SE'"
-              :symbol="'°C'"
-            ></coloredData>
-            <coloredData
-              :label="'Intensité'"
-              :data_name="'batterySE_current_a'"
-              :symbol="'A'"
-            ></coloredData>
-          </div>
+        <div class="coll">
+          <p>Charge</p>
+          <p>Température</p>
+          <p>Intensité</p>
         </div>
-        <!-- Moteur -->
-
-        <div class="data">
-          <p>MOTEUR</p>
-          <div class="row">
-            <coloredData
-              :label="'Puissance'"
-              :data_name="'motor_pow'"
-              :symbol="'W'"
-            ></coloredData>
-
-            <coloredData
-              :label="'Ampérage'"
-              :data_name="'mottor_current_a'"
-              :symbol="'A'"
-            ></coloredData>
-          </div>
-          <div class="row">
-            <coloredData
-              :label="'Throttle'"
-              :data_name="'motor_throttle'"
-              :symbol="'%'"
-            ></coloredData>
-            <coloredData
-              :label="'Température'"
-              :data_name="'motor_temp'"
-              :symbol="'°C'"
-            ></coloredData>
-          </div>
+        <div class="coll">
+          <p>Energie</p>
+          <coloredData :data_name="'battery_soc'" :symbol="'%'"></coloredData>
+          <coloredData :data_name="'battery_temp'" :symbol="'°C'"></coloredData>
+          <coloredData
+            :data_name="'battery_current_a'"
+            :symbol="'A'"
+          ></coloredData>
+        </div>
+        <div class="coll">
+          <p>SE</p>
+          <coloredData
+            :data_name="'battery_soc_SE'"
+            :symbol="'%'"
+          ></coloredData>
+          <coloredData
+            :data_name="'battery_temp_SE'"
+            :symbol="'°C'"
+          ></coloredData>
+          <coloredData
+            :data_name="'batterySE_current_a'"
+            :symbol="'A'"
+          ></coloredData>
         </div>
       </div>
+    </div>
+    <!-- Moteur -->
 
-      <!-- PAC -->
+    <div class="data coll">
+      <p>MOTEUR</p>
       <div class="row">
-        <div class="data">
-          <p>PAC</p>
-          <div class="row">
-            <coloredData
-              :label="'H2'"
-              :data_name="'qtt_H2rest'"
-              :symbol="'L'"
-            ></coloredData>
-          </div>
-          <div class="row">
-            <coloredData
-              :label="'Température'"
-              :data_name="'pac_temperature'"
-              :symbol="'°C'"
-            ></coloredData>
-          </div>
-        </div>
-        <!-- GPS -->
-        <div class="data">
-          <div class="row">
-            <coloredData
-              :label="'RPM'"
-              :data_name="'motor_rpm'"
-              :symbol="'RPM'"
-            ></coloredData>
-          </div>
-          <div class="row">
-            <coloredData
-              :label="'Vitesse'"
-              :data_name="'gps_vitesse'"
-              :symbol="'km/h - noeuds '"
-            ></coloredData>
+        <coloredData
+          :label="'Puissance'"
+          :data_name="'motor_pow'"
+          :symbol="'W'"
+        ></coloredData>
 
-            <coloredData
-              :label="'Heure'"
-              :data_name="'Heure'"
-              :symbol="'HEURE'"
-            ></coloredData>
-          </div>
-        </div>
+        <coloredData
+          :label="'Ampérage'"
+          :data_name="'mottor_current_a'"
+          :symbol="'A'"
+        ></coloredData>
+      </div>
+      <div class="row">
+        <coloredData
+          :label="'Throttle'"
+          :data_name="'motor_throttle'"
+          :symbol="'%'"
+        ></coloredData>
+        <coloredData
+          :label="'Température'"
+          :data_name="'motor_temp'"
+          :symbol="'°C'"
+        ></coloredData>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAC -->
+  <div class="row">
+    <div class="data coll">
+      <p>PAC</p>
+      <div class="row">
+        <coloredData
+          :label="'H2'"
+          :data_name="'qtt_H2rest'"
+          :symbol="'L'"
+        ></coloredData>
+      </div>
+      <div class="row">
+        <coloredData
+          :label="'Température'"
+          :data_name="'pac_temperature'"
+          :symbol="'°C'"
+        ></coloredData>
+      </div>
+    </div>
+    <!-- GPS -->
+    <div class="data coll">
+      <div class="row">
+        <coloredData
+          :label="'RPM'"
+          :data_name="'motor_rpm'"
+          :symbol="'RPM'"
+        ></coloredData>
+      </div>
+      <div class="row">
+        <coloredData
+          :label="'Vitesse'"
+          :data_name="'gps_vitesse'"
+          :symbol="'km/h - noeuds '"
+        ></coloredData>
+
+        <coloredData
+          :label="'Heure'"
+          :data_name="'Heure'"
+          :symbol="'HEURE'"
+        ></coloredData>
       </div>
     </div>
   </div>
 </template>
 
 <style>
-.box {
-}
-
-.data {
+#app {
+  height: 100%;
   display: flex;
   flex-direction: column;
+  align-content: center;
+  width: 100%;
+  height: 100%;
+}
+.data {
   justify-content: center;
   align-items: center;
   margin: 10px;
@@ -196,14 +192,6 @@ onMounted(async () => {});
   border-radius: 10px;
   background-color: white;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.top-container {
-  /*
-  display: flex;
-  flex: wrap; */
-  align-content: center;
-  border: 2px solid white;
 }
 
 :root {
@@ -252,7 +240,13 @@ html::-webkit-scrollbar {
   flex-direction: row;
   justify-content: space-between;
   align-items: flex-end;
-  margin-bottom: 10px;
+}
+
+.coll {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 p {
   margin: 0;

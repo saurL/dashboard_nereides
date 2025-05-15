@@ -1,9 +1,9 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-use log::{error, info};
-
+#[cfg(target_os = "linux")]
 use get_if_addrs::get_if_addrs;
+use log::{error, info};
 use tauri::{async_runtime::spawn, AppHandle, Emitter};
 use tokio::sync::Mutex;
 use tokio::time::sleep;
@@ -13,7 +13,6 @@ use crate::csv_writer::Csv_writter;
 use crate::gps::Gps;
 use crate::mqtt::MQTT;
 use crate::uart_communication::UartData;
-use crate::uart_communication::{self, UartCommunication};
 use indexmap::IndexMap;
 use rand::rngs::StdRng;
 use rand::{Rng, SeedableRng};
@@ -187,14 +186,16 @@ impl App {
         let mut instance = self.clone();
         spawn(async move {
             info!("Démarrage de l'envoi des évenements aléatoires");
-
+            let mut value: f64 = 1.0;
             loop {
                 let datas = instance.datas.clone();
                 for data_name in datas {
-                    let value: f64 = rng.gen_range(0.0..100.0);
-                    instance.treat_data(data_name, value);
+                    //let value: f64 = rng.gen_range(0.0..100.0);
+                    instance.treat_data(data_name, f64::cos(value));
+
+                    value += 10.0;
                 }
-                sleep(Duration::from_millis(3000)).await;
+                sleep(Duration::from_millis(1000)).await;
             }
         });
     }
@@ -228,7 +229,9 @@ impl App {
                                 if !ipv4.is_loopback() {
                                     info!("Interface : {}", iface.name);
                                     info!("Adresse : {}", iface.ip());
-                                    instance2.mqtt.send("ipv4".into(), ipv4.to_bits().to_le_bytes().to_vec());
+                                    instance2
+                                        .mqtt
+                                        .send("ipv4".into(), ipv4.to_bits().to_le_bytes().to_vec());
                                     info!("Adresse IPv4 locale : {}", ipv4);
                                 }
                             }

@@ -71,6 +71,7 @@ const computedColor = computed(() => {
 p {
   margin: 0;
   padding: 0;
+  text-align: center;
 }
 .coloredData {
   text-align: right;
@@ -94,5 +95,9 @@ p {
 .data_block {
   padding-left: 2px;
   padding-right: 2px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 </style>
