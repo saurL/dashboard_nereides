@@ -12,7 +12,10 @@ use crate::csv_writer::Csv_writter;
 #[cfg(target_os = "linux")]
 use crate::gps::Gps;
 use crate::mqtt::MQTT;
+#[cfg(target_os = "linux")]
+use crate::uart_communication::UartCommunication;
 use crate::uart_communication::UartData;
+
 use indexmap::IndexMap;
 use rand::rngs::StdRng;
 use rand::{Rng, SeedableRng};
