@@ -42,38 +42,56 @@ pub struct App {
 impl App {
     pub fn new(app_handle: AppHandle) -> App {
         let datas = [
-            "pac_temperature",
+            //"pac_temperature",
+            "battery_soc",
+            "battery_soh"
             "battery_voltage_v",
             "battery_current_a",
             "battery_soc",
             "battery_temp",
-            "batterySE_temp",
+            //"batterySE_temp",
+            "baterySE_soc",
+            "batterySE_maxTemp_c",
+            "batterySE_minTemp_c"
+            "batterySE_current_a",
+            "batterySE_voltage_v",
             "motor_controller_temp",
             "mottor_current_a",
             "motor_voltage_v",
             "motor_rpm",
             "motor_throttle",
+            "motor_error_code",
+            "motor_temp"
             "gps_long",
             "gps_lat",
-            "motor_puissance_instantannée",
+            //"motor_puissance_instantannée",
         ];
 
         // Initialisation d'un dictionnaire avec des noms de variables et des valeurs optionnelles
         let data_api_str = [
-            "pac_temperature",
+            //"pac_temperature",
+            "battery_soc",
+            "battery_soh"
             "battery_voltage_v",
             "battery_current_a",
             "battery_soc",
             "battery_temp",
-            "batterySE_temp",
+            //"batterySE_temp",
+            "baterySE_soc",
+            "batterySE_maxTemp_c",
+            "batterySE_minTemp_c"
+            "batterySE_current_a",
+            "batterySE_voltage_v",
             "motor_controller_temp",
             "mottor_current_a",
             "motor_voltage_v",
             "motor_rpm",
             "motor_throttle",
+            "motor_error_code",
+            "motor_temp"
             "gps_long",
             "gps_lat",
-            "motor_puissance_instantannée",
+            //"motor_puissance_instantannée",
         ];
         let data_api: IndexMap<&'static str, Option<f64>> =
             data_api_str.iter().map(|&key| (key, None)).collect();
