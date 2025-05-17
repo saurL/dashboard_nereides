@@ -86,7 +86,7 @@ impl App {
         #[cfg(target_os = "linux")]
         {
             let uart_communication =
-                Some(UartCommunication::new("/dev/serial0", 1000000, tx.clone()));
+                Some(UartCommunication::new("/dev/serial0", 115200, tx.clone()));
         }
         #[cfg(target_os = "linux")]
         let gps = Gps::new(tx.clone());
